@@ -5,16 +5,11 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "requests",
-        "beautifulsoup4",
-        "langchain",
-        "langchain_openai",
+        "requests>=2.25.1",
+        "beautifulsoup4>=4.9.3",
+        "langchain>=0.0.1",
+        "langchain_openai>=0.0.1",
     ],
-    entry_points={
-        'console_scripts': [
-            'liveweb=liveweb.liveweb:main',
-        ],
-    },
     author="Mohammad Agwan",
     author_email="mohammad.agwan@somaiya.edu",
     description="A toolkit for refining search queries, performing Google searches, fetching and processing web content.",
@@ -28,3 +23,4 @@ setup(
     ],
     python_requires='>=3.6',
 )
+
