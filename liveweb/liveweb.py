@@ -66,11 +66,3 @@ class LiveWebToolkit:
             fetched_content.append(content)
         final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
         return final_summary
-
-if __name__ == "__main__":
-    api_key = input("Enter your OpenAI API key: ")
-    query = input("Enter your initial search query: ")
-    num_results = int(input("Enter the number of search results to retrieve: "))
-    toolkit = LiveWebToolkit(api_key)
-    summary = toolkit.execute_toolkit(query, num_results)
-    print(f"Final Summary: {summary}")
