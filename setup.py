@@ -11,6 +11,10 @@ setup(
         "langchain_openai",
         "pyyaml",
     ],
+    include_package_data=True,  # This line is important
+    package_data={
+        'liveweb': ['prompts.yaml'],  # Include prompts.yaml in the liveweb package
+    },
     author="Mohammad Agwan",
     author_email="mohammad.agwan@somaiya.edu",
     description="A toolkit for refining search queries, performing Google searches, fetching and processing web content.",
