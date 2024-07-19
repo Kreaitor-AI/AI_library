@@ -5,10 +5,11 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "requests>=2.25.1",
-        "beautifulsoup4>=4.9.3",
-        "langchain>=0.0.1",
-        "langchain_openai>=0.0.1",
+        "requests",
+        "beautifulsoup4",
+        "langchain",
+        "langchain_openai",
+        "pyyaml",
     ],
     author="Mohammad Agwan",
     author_email="mohammad.agwan@somaiya.edu",
@@ -23,4 +24,3 @@ setup(
     ],
     python_requires='>=3.6',
 )
-
