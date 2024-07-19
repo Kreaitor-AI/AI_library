@@ -3,9 +3,8 @@ from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
 import yaml
-import os
 
-class web_summary:
+class LiveWebToolkit:
     def __init__(self, api_key, prompts_file='liveweb/prompts.yaml'):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
@@ -68,6 +67,6 @@ class web_summary:
         final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
         return final_summary
 
-def liveweb_toolkit(api_key, initial_query, num_results, prompts_file='liveweb/prompts.yaml'):
+def web_summary(api_key, initial_query, num_results, prompts_file='liveweb/prompts.yaml'):
     toolkit = LiveWebToolkit(api_key, prompts_file)
     return toolkit.execute_toolkit(initial_query, num_results)
