@@ -2,16 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
+import yaml
+import os
 
 class LiveWebToolkit:
-    def __init__(self, api_key):
+    def __init__(self, api_key, prompts_file='liveweb/prompts.yaml'):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        # Load prompts from the YAML file
+        with open(prompts_file, 'r') as file:
+            self.prompts = yaml.safe_load(file)
 
     def refine_search_query(self, query):
-        template = """Refine the following query to make it more precise and suitable for a Google search:
-        Initial Query: {query}
-        Refined Query:"""
+        template = self.prompts['refine_search_query']
         prompt = PromptTemplate(template=template, input_variables=["query"])
         result = prompt | self.llm
         refined_query = result.invoke({"query": query}).content.strip()
@@ -43,9 +46,7 @@ class LiveWebToolkit:
             return str(e)
 
     def process_web_content_with_llm(self, contents):
-        template = """Summarize the following content accurately and comprehensively. Ensure that no key points are omitted, and all important details are included. The summary should reflect the full scope of the content:
-        {content}
-        """
+        template = self.prompts['summarize_content']
         prompt = PromptTemplate(template=template, input_variables=["content"])
         processed_summaries = []
         max_chunk_length = 16000
@@ -67,6 +68,6 @@ class LiveWebToolkit:
         final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
         return final_summary
 
-def liveweb_toolkit(api_key, initial_query, num_results):
-    toolkit = LiveWebToolkit(api_key)
+def liveweb_toolkit(api_key, initial_query, num_results, prompts_file='liveweb/prompts.yaml'):
+    toolkit = LiveWebToolkit(api_key, prompts_file)
     return toolkit.execute_toolkit(initial_query, num_results)
