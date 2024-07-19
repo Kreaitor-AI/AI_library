@@ -3,11 +3,15 @@ from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
 import yaml
+import pkg_resources
 
 class LiveWebToolkit:
-    def __init__(self, api_key, prompts_file='liveweb/prompts.yaml'):
+    def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        if prompts_file is None:
+            # Use the default prompts file within the package
+            prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         # Load prompts from the YAML file
         with open(prompts_file, 'r') as file:
             self.prompts = yaml.safe_load(file)
@@ -67,6 +71,6 @@ class LiveWebToolkit:
         final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
         return final_summary
 
-def web_summary(api_key, initial_query, num_results, prompts_file='liveweb/prompts.yaml'):
+def web_summary(api_key, initial_query, num_results, prompts_file=None):
     toolkit = LiveWebToolkit(api_key, prompts_file)
     return toolkit.execute_toolkit(initial_query, num_results)
