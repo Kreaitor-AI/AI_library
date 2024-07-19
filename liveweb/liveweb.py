@@ -66,3 +66,7 @@ class LiveWebToolkit:
             fetched_content.append(content)
         final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
         return final_summary
+
+def liveweb_toolkit(api_key, initial_query, num_results):
+    toolkit = LiveWebToolkit(api_key)
+    return toolkit.execute_toolkit(initial_query, num_results)
