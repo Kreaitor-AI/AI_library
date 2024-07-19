@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
 
-def liveweb_toolkit(api_key, initial_query, num_results):
+def web_summary(api_key, initial_query, num_results):
     # Initialize the OpenAI LLM
     llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
 
@@ -70,10 +70,3 @@ def liveweb_toolkit(api_key, initial_query, num_results):
     final_summary = process_web_content_with_llm(" ".join(fetched_content))
     return final_summary
 
-# Example usage of the toolkit
-if __name__ == "__main__":
-    api_key = input("Enter your OpenAI API key: ")
-    query = input("Enter your initial search query: ")
-    num_results = int(input("Enter the number of search results to retrieve: "))
-    summary = liveweb_toolkit(api_key, query, num_results)
-    print(f"Final Summary: {summary}")
