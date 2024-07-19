@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 import yaml
 import os
 
-class LiveWebToolkit:
+class web_summary:
     def __init__(self, api_key, prompts_file='liveweb/prompts.yaml'):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
