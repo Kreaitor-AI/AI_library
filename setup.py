@@ -11,6 +11,9 @@ setup(
         "langchain_openai",
         "openai",
     ],
+        package_data={
+        'liveweb': ['prompts.yaml'],
+    },
     author="Mohammad Agwan",
     author_email="mohammad.agwan@somaiya.edu",
     description="A toolkit for refining search queries, performing Google searches, fetching and processing web content, and generating images using DALL-E.",
