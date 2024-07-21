@@ -3,5 +3,5 @@ refine_search_query: |
   Initial Query: {query}
 
 summarize_content: |
-  Summarize the following content accurately and comprehensively in  about 300 words. Ensure that no key points are omitted, and all important details are included. The summary should reflect the full scope of the content.
+  Summarize the following content:
   content:{content}
