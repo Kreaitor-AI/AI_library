@@ -42,17 +42,17 @@ class LiveWebToolkit:
         try:
             response = requests.get(url)
             soup = BeautifulSoup(response.content, 'html.parser')
-            paragraphs = soup.find_all('p')
-            content = "\n".join([para.get_text() for para in paragraphs])
+            paragraphs = soup.find_all(['p', 'div'])
+            content = "\n".join([para.get_text() for para in paragraphs if para.get_text(strip=True)])
             return content
         except Exception as e:
-            return str(e)
+            return f"Error fetching content from {url}: {str(e)}"
 
-    def process_web_content_with_llm(self, contents):
+    def process_web_content_with_llm(self, content):
         template = self.prompts['summarize_content']
         prompt = PromptTemplate(template=template, input_variables=["content"])
         result = prompt | self.llm
-        summary = result.invoke({"content": contents}).content
+        summary = result.invoke({"content": content}).content
         return summary
 
     def execute_toolkit(self, initial_query, num_results):
