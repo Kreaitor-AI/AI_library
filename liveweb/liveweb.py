@@ -51,15 +51,9 @@ class LiveWebToolkit:
     def process_web_content_with_llm(self, contents):
         template = self.prompts['summarize_content']
         prompt = PromptTemplate(template=template, input_variables=["content"])
-        processed_summaries = []
-        max_chunk_length = 16000
-        content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
-        for chunk in content_chunks:
-            result = prompt | self.llm
-            summary = result.invoke({"content": chunk}).content
-            processed_summaries.append(summary)
-        final_summary = " ".join(processed_summaries)
-        return final_summary
+        result = prompt | self.llm
+        summary = result.invoke({"content": contents}).content
+        return summary
 
     def execute_toolkit(self, initial_query, num_results):
         refined_query = self.refine_search_query(initial_query)
