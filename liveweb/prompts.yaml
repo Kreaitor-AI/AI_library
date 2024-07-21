@@ -1,8 +1,7 @@
 refine_search_query: |
   Refine the following query to make it more precise and suitable for a Google search:
   Initial Query: {query}
-  Refined Query:
 
 summarize_content: |
-  Summarize the following content accurately and comprehensively in 300 words. Ensure that no key points are omitted, and all important details are included. The summary should reflect the full scope of the content:
+  Summarize the following content accurately and comprehensively in  about 300 words. Ensure that no key points are omitted, and all important details are included. The summary should reflect the full scope of the content:
   {content}
