@@ -21,6 +21,7 @@ class LiveWebToolkit:
         prompt = PromptTemplate(template=template, input_variables=["query"])
         result = prompt | self.llm
         refined_query = result.invoke({"query": query}).content.strip()
+        print(f"Refined Query: {refined_query}")  # Print the refined query
         return refined_query
 
     def perform_google_search(self, query, num_results):
@@ -44,6 +45,7 @@ class LiveWebToolkit:
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all(['p', 'div'])
             content = "\n".join([para.get_text() for para in paragraphs if para.get_text(strip=True)])
+            print(f"Fetched content from {url}:\n{content}\n")  # Print the fetched content
             return content
         except Exception as e:
             return f"Error fetching content from {url}: {str(e)}"
@@ -53,6 +55,7 @@ class LiveWebToolkit:
         prompt = PromptTemplate(template=template, input_variables=["content"])
         result = prompt | self.llm
         summary = result.invoke({"content": content}).content
+        print(f"Summary:\n{summary}\n")  # Print the summary
         return summary
 
     def execute_toolkit(self, initial_query, num_results):
