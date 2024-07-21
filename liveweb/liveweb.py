@@ -8,7 +8,7 @@ import pkg_resources
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
         if prompts_file is None:
             # Use the default prompts file within the package
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
@@ -50,13 +50,25 @@ class LiveWebToolkit:
         except Exception as e:
             return f"Error fetching content from {url}: {str(e)}"
 
-    def process_web_content_with_llm(self, content):
-        template = self.prompts['summarize_content']
+    def process_web_content_with_llm(self, contents):
+        template = """Summarize the following content accurately and comprehensively. Ensure that no key points are omitted, and all important details are included. The summary should reflect the full scope of the content:
+        {content}
+        """
         prompt = PromptTemplate(template=template, input_variables=["content"])
-        result = prompt | self.llm
-        summary = result.invoke({"content": content}).content
-        print(f"Summary:\n{summary}\n")  # Print the summary
-        return summary
+        llm_chain = prompt | self.llm
+
+        processed_summaries = []
+
+        max_chunk_length = 55000
+        content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
+        results = llm_chain.batch([{"content": chunk} for chunk in content_chunks], config={"max_concurrency": 10})
+
+        for result in results:
+            processed_summaries.append(result.content)
+
+        final_summary = " ".join(processed_summaries)
+        print(f"Summary:\n{final_summary}\n")  # Print the summary
+        return final_summary
 
     def execute_toolkit(self, initial_query, num_results):
         refined_query = self.refine_search_query(initial_query)
