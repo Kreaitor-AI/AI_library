@@ -6,9 +6,9 @@ import yaml
 import pkg_resources
 
 class LiveWebToolkit:
-    def __init__(self, api_key, prompts_file=None):
+    def __init__(self, api_key, prompts_file=None, model="gpt-4o-mini"):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model=model)
         if prompts_file is None:
             # Use the default prompts file within the package
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
@@ -21,7 +21,6 @@ class LiveWebToolkit:
         prompt = PromptTemplate(template=template, input_variables=["query"])
         result = prompt | self.llm
         refined_query = result.invoke({"query": query}).content.strip()
-        print(f"Refined Query: {refined_query}")  # Print the refined query
         return refined_query
 
     def perform_google_search(self, query, num_results):
@@ -45,7 +44,6 @@ class LiveWebToolkit:
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all(['p', 'div'])
             content = "\n".join([para.get_text() for para in paragraphs if para.get_text(strip=True)])
-            print(f"Fetched content from {url}:\n{content}\n")  # Print the fetched content
             return content
         except Exception as e:
             return f"Error fetching content from {url}: {str(e)}"
@@ -64,14 +62,16 @@ class LiveWebToolkit:
         results = llm_chain.batch([{"content": chunk} for chunk in content_chunks], config={"max_concurrency": 10})
 
         for result in results:
+            if not result.content:
+                print(f"Error: Received empty content for chunk: {chunk}")
             processed_summaries.append(result.content)
 
         final_summary = " ".join(processed_summaries)
-        print(f"Summary:\n{final_summary}\n")  # Print the summary
         return final_summary
 
     def execute_toolkit(self, initial_query, num_results):
         refined_query = self.refine_search_query(initial_query)
+        print(f"Refined Query: {refined_query}")
         search_results = self.perform_google_search(refined_query, num_results)
         fetched_content = []
         for title, link, snippet in search_results:
@@ -80,6 +80,6 @@ class LiveWebToolkit:
         final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
         return final_summary
 
-def web_summary(api_key, initial_query, num_results, prompts_file=None):
-    toolkit = LiveWebToolkit(api_key, prompts_file)
+def web_summary(api_key, initial_query, num_results, prompts_file=None, model="gpt-4o-mini"):
+    toolkit = LiveWebToolkit(api_key, prompts_file, model)
     return toolkit.execute_toolkit(initial_query, num_results)
