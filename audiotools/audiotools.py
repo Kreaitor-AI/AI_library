@@ -1,7 +1,8 @@
 import requests
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
-from elevenlabs import ElevenLabs, Voice, VoiceSettings
+from elevenlabs.client import ElevenLabs
+from elevenlabs import Voice, VoiceSettings
 import yaml
 import pkg_resources
 
