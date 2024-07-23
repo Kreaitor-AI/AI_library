@@ -18,7 +18,10 @@ class Llama3Client:
             )
 
             for chunk in stream_response:
-                print(chunk.choices[0].delta.content or "", end="", flush=True)
+                # Correctly handle streaming content
+                content = chunk.choices[0].delta.content
+                if content:
+                    print(content, end="", flush=True)
         else:
             # Non-streaming mode
             response = self.client.chat.completions.create(
@@ -28,6 +31,7 @@ class Llama3Client:
                     {"role": "user", "content": prompt}
                 ]
             )
+            # Correctly handle non-streaming response
             return response.choices[0].message['content']
 
 def llama3(prompt, api_key, stream=False):
