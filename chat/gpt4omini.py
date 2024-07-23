@@ -14,7 +14,7 @@ class GPT4ominiClient:
         
         llm = ChatOpenAI(
             openai_api_key=self.api_key, 
-            model="gpt-4omini",
+            model="gpt-4o-mini",
             streaming=stream,
             callbacks=callbacks
         )
