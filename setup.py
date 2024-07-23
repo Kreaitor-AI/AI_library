@@ -12,6 +12,7 @@ setup(
         "elevenlabs",
         "openai",
         "pyyaml",
+        "together",
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
