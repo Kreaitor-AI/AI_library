@@ -21,6 +21,6 @@ class GPT3_5TurboClient:
             result = llm_chain.invoke({"query": initial_query})
             return result.content.strip()
 
-def chat_completion(initial_query, api_key=None, stream=False):
+def gpt3_5(initial_query, api_key=None, stream=False):
     client = GPT3_5TurboClient(api_key)
     return client.chat_completion(initial_query, stream)
