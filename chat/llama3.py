@@ -30,8 +30,8 @@ class Llama3Client:
                     {"role": "user", "content": prompt}
                 ]
             )
-            # Return non-streaming response content
-            return response.choices[0].message['content']
+            # Correctly access the content from the response
+            return response.choices[0].message.content
 
 def llama3(prompt, api_key=None, stream=False):
     client = Llama3Client(api_key)
