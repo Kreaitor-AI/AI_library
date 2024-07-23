@@ -7,7 +7,7 @@ import pkg_resources
 
 class AudioTools:
     def __init__(self, openai_api_key, elevenlabs_api_key, prompts_file=None):
-        self.llm = ChatOpenAI(openai_api_key=openai_api_key, model="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(openai_api_key=openai_api_key, model="gpt-4o-mini")
         self.client = ElevenLabs(api_key=elevenlabs_api_key)
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
