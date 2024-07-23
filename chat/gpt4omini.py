@@ -26,6 +26,6 @@ class GPT4ominiClient:
         if not stream:
             return result.content.strip()
 
-def gpt_4o_mini(prompt, api_key=None, stream=False):
+def gpt4omini(prompt, api_key=None, stream=False):
     client = GPT4ominiClient(api_key)
     return client.chat_completion(prompt, stream)
