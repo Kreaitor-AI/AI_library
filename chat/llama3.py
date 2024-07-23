@@ -2,8 +2,10 @@ import os
 from together import Together
 
 class Llama3Client:
-    def __init__(self, api_key):
-        self.client = Together(api_key=api_key)
+    def __init__(self, api_key=None):
+        # Use environment variable if api_key is not provided
+        self.api_key = api_key or os.environ.get("TOGETHER_API_KEY")
+        self.client = Together(api_key=self.api_key)
 
     def get_response(self, prompt, stream=False):
         if stream:
@@ -11,7 +13,6 @@ class Llama3Client:
             stream_response = self.client.chat.completions.create(
                 model="meta-llama/Llama-3-70b-chat-hf",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
                 ],
                 stream=True
@@ -26,13 +27,12 @@ class Llama3Client:
             response = self.client.chat.completions.create(
                 model="meta-llama/Llama-3-70b-chat-hf",
                 messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": prompt}
                 ]
             )
             # Return non-streaming response content
             return response.choices[0].message['content']
 
-def llama3(prompt, api_key, stream=False):
+def llama3(prompt, api_key=None, stream=False):
     client = Llama3Client(api_key)
     return client.get_response(prompt, stream)
