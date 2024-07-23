@@ -1,3 +1,4 @@
+import os
 from together import Together
 
 class Llama3Client:
