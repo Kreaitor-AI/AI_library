@@ -1,3 +1,4 @@
+import os
 from together import Together
 
 class Llama3Client:
@@ -28,3 +29,7 @@ class Llama3Client:
                 ]
             )
             return response.choices[0].message['content']
+
+def llama3(prompt, api_key, stream=False):
+    client = Llama3Client(api_key)
+    return client.get_response(prompt, stream)
