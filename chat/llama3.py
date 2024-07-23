@@ -1,4 +1,3 @@
-import os
 from together import Together
 
 class Llama3Client:
@@ -17,11 +16,10 @@ class Llama3Client:
                 stream=True
             )
 
+            # Print streaming response
             for chunk in stream_response:
-                # Correctly handle streaming content
-                content = chunk.choices[0].delta.content
-                if content:
-                    print(content, end="", flush=True)
+                content = chunk.choices[0].delta.content or ""
+                print(content, end="", flush=True)
         else:
             # Non-streaming mode
             response = self.client.chat.completions.create(
@@ -31,7 +29,7 @@ class Llama3Client:
                     {"role": "user", "content": prompt}
                 ]
             )
-            # Correctly handle non-streaming response
+            # Return non-streaming response content
             return response.choices[0].message['content']
 
 def llama3(prompt, api_key, stream=False):
