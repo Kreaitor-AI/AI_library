@@ -13,6 +13,7 @@ setup(
         "openai",
         "pyyaml",
         "together",
+        "pydub",
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
