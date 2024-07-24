@@ -3,99 +3,40 @@ import uuid
 import time
 import re
 import yaml
+from langchain import PromptTemplate
+from langchain_openai import ChatOpenAI
+from elevenlabs.client import ElevenLabs
+from elevenlabs import Voice, VoiceSettings
+import yaml
+import pkg_resources
 
-# Load voices from a YAML file
-with open('audiotools/voices.yaml', 'r') as file:
-    fake_you_voice = yaml.safe_load(file)
+class AudioTools:
+    def __init__(self, openai_api_key, elevenlabs_api_key, prompts_file=None):
+        self.llm = ChatOpenAI(openai_api_key=openai_api_key, model="gpt-4o-mini")
+        self.client = ElevenLabs(api_key=elevenlabs_api_key)
+        if prompts_file is None:
+            prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
+        with open(prompts_file, 'r') as file:
+            self.prompts = yaml.safe_load(file)
+        self.voice_dict = self.prompts['Voice']
 
-class FakeYouTTS:
-    def __init__(self, username_or_email, password):
-        self.cookie = self.authenticate(username_or_email, password)
+    def generate_prompt(self, text, emotion):
+        template = self.prompts['modify_text_with_emotion']
+        prompt = PromptTemplate(template=template, input_variables=["text", "emotion"])
+        result = prompt | self.llm
+        modified_text = result.invoke({"text": text, "emotion": emotion}).content.strip()
+        return modified_text
 
-    def authenticate(self, username_or_email, password):
-        login_url = "https://api.fakeyou.com/v1/login"
-        login_payload = {
-            "username_or_email": username_or_email,
-            "password": password
-        }
-        login_headers = {
-            "Content-Type": "application/json"
-        }
+    def generate_tts(self, text, voice_name='Rachel', stability=0.5, similarity_boost=0.5, style=0.5, use_speaker_boost=True):
+        voice_id = self.voice_dict.get(voice_name, '21m00Tcm4TlvDq8ikWAM')
+        settings = VoiceSettings(stability=stability, similarity_boost=similarity_boost, style=style, use_speaker_boost=use_speaker_boost)
+        voice = Voice(voice_id=voice_id, settings=settings)
+        audio_generator = self.client.generate(text=text, voice=voice)
+        audio = b''.join(audio_generator)
+        return audio
 
-        response = requests.post(login_url, json=login_payload, headers=login_headers)
-        response_json = response.json()
-
-        if not response_json.get("success"):
-            raise Exception("Authentication failed.")
-
-        cookie = response.headers.get("set-cookie")
-        if not cookie:
-            raise Exception("Failed to retrieve cookie.")
-
-        # Extract the session token from the cookie
-        session_token = re.search(r"session=([^;]+)", cookie).group(1)
-        return session_token
-
-    def make_tts_request(self, text, model_token):
-        tts_url = "https://api.fakeyou.com/tts/inference"
-        tts_payload = {
-            "tts_model_token": model_token,
-            "uuid_idempotency_token": str(uuid.uuid4()),
-            "inference_text": text
-        }
-        tts_headers = {
-            "Content-Type": "application/json",
-            "Cookie": f"session={self.cookie}"
-        }
-
-        response = requests.post(tts_url, json=tts_payload, headers=tts_headers)
-        response_json = response.json()
-
-        if response_json.get("success"):
-            return response_json["inference_job_token"]
-        else:
-            raise Exception("TTS request failed.")
-
-    def check_tts_status(self, job_token):
-        status_url = f"https://api.fakeyou.com/tts/job/{job_token}"
-        status_headers = {
-            "Accept": "application/json",
-            "Cookie": f"session={self.cookie}"
-        }
-
-        while True:
-            response = requests.get(status_url, headers=status_headers)
-            response_json = response.json()
-
-            if response_json["state"]["status"] == "complete_success":
-                return response_json["state"]["maybe_public_bucket_wav_audio_path"]
-            elif response_json["state"]["status"] == "failed":
-                raise Exception("TTS job failed.")
-
-            time.sleep(5)
-
-    def logout(self):
-        logout_url = "https://api.fakeyou.com/v1/logout"
-        logout_headers = {
-            "Content-Type": "application/json",
-            "Cookie": f"session={self.cookie}"
-        }
-
-        response = requests.post(logout_url, headers=logout_headers)
-        response_json = response.json()
-
-        if not response_json.get("success"):
-            raise Exception("Logout failed.")
-
-def generate_audio(username_or_email, password, text, voice_name):
-    if voice_name not in fake_you_voice:
-        raise ValueError(f"Voice name '{voice_name}' not found in voices.")
-
-    model_token = fake_you_voice[voice_name]
-    tts = FakeYouTTS(username_or_email, password)
-    job_token = tts.make_tts_request(text, model_token)
-    wav_path = tts.check_tts_status(job_token)
-    # You can implement audio playback or return the path as needed
-    tts.logout()
-    
-    return wav_path
+def generate_audio(openai_api_key, elevenlabs_api_key, text, emotion, voice_name='Rachel', stability=0.5, similarity_boost=0.5, style=0.5, use_speaker_boost=True, prompts_file=None):
+    toolkit = AudioTools(openai_api_key, elevenlabs_api_key, prompts_file)
+    modified_text = toolkit.generate_prompt(text, emotion)
+    audio = toolkit.generate_tts(modified_text, voice_name, stability, similarity_boost, style, use_speaker_boost)
+    return audio
