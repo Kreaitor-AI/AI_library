@@ -5,8 +5,9 @@ import re
 import yaml
 
 # Load voices from a YAML file
-with open('audiotools/voices.yaml', 'r') as file:
+with open('/absolute/path/to/audiotools/voices.yaml', 'r') as file:
     fake_you_voice = yaml.safe_load(file)
+
 
 class FakeYouTTS:
     def __init__(self, username_or_email, password):
