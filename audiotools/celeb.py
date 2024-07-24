@@ -3,21 +3,16 @@ import uuid
 import time
 import re
 import yaml
-import os
+import pkg_resources
 
+# Get the path to the voices YAML file
 def get_voices_file_path():
-    # Use an environment variable or set a default path
-    path = os.getenv('VOICES_FILE_PATH', 'audiotools/voices.yaml')
-    return path
+    # Use pkg_resources to get the path to the voices.yaml file within the package
+    return pkg_resources.resource_filename(__name__, 'voices.yaml')
 
 # Load voices from a YAML file
-try:
-    with open(get_voices_file_path(), 'r') as file:
-        fake_you_voice = yaml.safe_load(file)
-except FileNotFoundError:
-    raise Exception("The voices.yaml file could not be found. Please check the file path.")
-except Exception as e:
-    raise Exception(f"An error occurred: {e}")
+with open(get_voices_file_path(), 'r') as file:
+    fake_you_voice = yaml.safe_load(file)
 
 class FakeYouTTS:
     def __init__(self, username_or_email, password):
@@ -43,6 +38,7 @@ class FakeYouTTS:
         if not cookie:
             raise Exception("Failed to retrieve cookie.")
 
+        # Extract the session token from the cookie
         session_token = re.search(r"session=([^;]+)", cookie).group(1)
         return session_token
 
