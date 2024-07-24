@@ -2,17 +2,6 @@ import requests
 import uuid
 import time
 import re
-import yaml
-import pkg_resources
-
-# Get the path to the voices YAML file
-def get_voices_file_path():
-    # Use pkg_resources to get the path to the voices.yaml file within the package
-    return pkg_resources.resource_filename(__name__, 'voices.yaml')
-
-# Load voices from a YAML file
-with open(get_voices_file_path(), 'r') as file:
-    fake_you_voice = yaml.safe_load(file)
 
 class FakeYouTTS:
     def __init__(self, username_or_email, password):
@@ -93,11 +82,7 @@ class FakeYouTTS:
         if not response_json.get("success"):
             raise Exception("Logout failed.")
 
-def celeb(username_or_email, password, text, voice_name):
-    if voice_name not in fake_you_voice:
-        raise ValueError(f"Voice name '{voice_name}' not found in voices.")
-
-    model_token = fake_you_voice[voice_name]
+def celeb(username_or_email, password, text, model_token):
     tts = FakeYouTTS(username_or_email, password)
     job_token = tts.make_tts_request(text, model_token)
     wav_path = tts.check_tts_status(job_token)
