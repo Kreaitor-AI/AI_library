@@ -5,8 +5,9 @@ import re
 import yaml
 import os
 
-# Determine the path to the voices.yaml file
+# Get the path to the voices YAML file
 def get_voices_file_path():
+    # This will work when running directly from the package or in environments where the package is installed
     return os.path.join(os.path.dirname(__file__), 'voices.yaml')
 
 # Load voices from a YAML file
