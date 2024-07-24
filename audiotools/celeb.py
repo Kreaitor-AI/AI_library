@@ -3,11 +3,15 @@ import uuid
 import time
 import re
 import yaml
+import os
+
+# Determine the path to the voices.yaml file
+def get_voices_file_path():
+    return os.path.join(os.path.dirname(__file__), 'voices.yaml')
 
 # Load voices from a YAML file
-with open('/absolute/path/to/audiotools/voices.yaml', 'r') as file:
+with open(get_voices_file_path(), 'r') as file:
     fake_you_voice = yaml.safe_load(file)
-
 
 class FakeYouTTS:
     def __init__(self, username_or_email, password):
