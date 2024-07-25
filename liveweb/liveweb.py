@@ -62,7 +62,7 @@ class LiveWebToolkit:
         template = self.prompts['summarize_content']
         prompt = PromptTemplate(template=template, input_variables=["content"])
         processed_summaries = []
-        max_chunk_length = 14000
+        max_chunk_length = 50000
         content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
         for chunk in content_chunks:
             result = prompt | self.llm
