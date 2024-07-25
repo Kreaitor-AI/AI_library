@@ -9,7 +9,7 @@ import time
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None, max_retries=3):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
