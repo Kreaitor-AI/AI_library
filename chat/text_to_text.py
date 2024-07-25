@@ -8,8 +8,8 @@ class TextToTextProcessor:
         self.api_key = api_key
         self.prompt = prompt
 
-        if model in ["gpt_3_5", "gpt_4o_mini"]:
-            self.llm = ChatOpenAI(openai_api_key=api_key, model=model.replace("_", "-"))
+        if model in ["gpt-3.5-turbo", "gpt-4o-mini"]:
+            self.llm = ChatOpenAI(openai_api_key=api_key, model=model)
         elif model == "llama3":
             self.client = Together(api_key=api_key)
         else:
