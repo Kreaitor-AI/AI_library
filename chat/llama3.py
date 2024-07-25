@@ -11,7 +11,6 @@ class Llama3Client:
     def get_response(self, prompt: str, stream: bool = False) -> str | Generator[str, None, None]:
         messages = [{"role": "user", "content": prompt}]
         model = "meta-llama/Llama-3-70b-chat-hf"
-
         if stream:
             return self._stream_response(model, messages)
         else:
