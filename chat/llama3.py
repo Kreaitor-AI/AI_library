@@ -2,7 +2,7 @@
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from together import Together
-from llama3 import llama3 as llama3_client
+from chat import llama3 as llama3_client
 
 class TextToTextProcessor:
     def __init__(self, model: str, api_key: str, prompt: str = None):
