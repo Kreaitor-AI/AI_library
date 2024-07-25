@@ -1,1 +1,1 @@
-from .blog_prompt import blog_format
+from .blog_format import blog_format
