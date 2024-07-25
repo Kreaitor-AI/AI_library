@@ -5,4 +5,4 @@ This toolkit provides tools for refining search queries, performing Google searc
 ## Installation
 
 ```bash
-pip install git+https://github.com/marchmello1/AI_library.git
+pip install git+https://github.com/Kreaitor-AI/AI_library.git
