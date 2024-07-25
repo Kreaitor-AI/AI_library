@@ -1,4 +1,4 @@
-FORMAT_PROMPT_TEMPLATE = """
+blog_format = """
 Format the following blog content {summary} using below instructions:
 
 **Instructions:**
