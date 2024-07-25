@@ -1,40 +1,39 @@
-from langchain.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
 from together import Together
+from typing import Optional, Generator
 
-class TextToTextProcessor:
-    def __init__(self, model, api_key, prompt=None):
-        self.model = model
+class Llama3Client:
+    def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key
-        self.prompt = prompt
+        if not self.api_key:
+            raise ValueError("API key must be provided or set as TOGETHER_API_KEY environment variable")
+        self.client = Together(api_key=self.api_key)
 
-        if model in ["gpt-3.5-turbo", "gpt-4o-mini"]:
-            self.llm = ChatOpenAI(openai_api_key=api_key, model=model)
-        elif model == "llama3":
-            self.client = Together(api_key=api_key)
+    def get_response(self, prompt: str, stream: bool = False) -> str | Generator[str, None, None]:
+        messages = [{"role": "user", "content": prompt}]
+        model = "meta-llama/Llama-3-70b-chat-hf"
+        if stream:
+            return self._stream_response(model, messages)
         else:
-            raise ValueError("Unsupported model.")
+            return self._non_stream_response(model, messages)
 
-    def process(self, prompt):
-        self.prompt = prompt
-        if hasattr(self, 'llm'):
-            template = "{prompt}"
-            prompt_template = PromptTemplate(template=template, input_variables=["prompt"])
-            chain = prompt_template | self.llm
-            result = chain.invoke({"prompt": self.prompt})
-            return result.content.strip()
-        else:
-            messages = [{"role": "user", "content": self.prompt}]
-            model = "meta-llama/Llama-3-70b-chat-hf"
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=messages
-            )
-            return response.choices[0].message.content
+    def _stream_response(self, model: str, messages: list) -> Generator[str, None, None]:
+        stream_response = self.client.chat.completions.create(
+            model=model,
+            messages=messages,
+            stream=True
+        )
+        for chunk in stream_response:
+            content = chunk.choices[0].delta.content or ""
+            yield content
 
-    def concat(self, next_model, next_prompt):
-        next_processor = TextToTextProcessor(next_model, self.api_key, next_prompt)
-        return next_processor.process(next_prompt)
+    def _non_stream_response(self, model: str, messages: list) -> str:
+        response = self.client.chat.completions.create(
+            model=model,
+            messages=messages
+        )
+        return response.choices[0].message.content
 
-def text_to_text(model, api_key, prompt=None):
-    return TextToTextProcessor(model, api_key, prompt)
+def llama3(prompt: str, api_key: Optional[str] = None, stream: bool = False) -> str | Generator[str, None, None]:
+    client = Llama3Client(api_key)
+    return client.get_response(prompt, stream)
+    
