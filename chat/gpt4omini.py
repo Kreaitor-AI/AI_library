@@ -9,20 +9,20 @@ class GPT4ominiClient:
     def chat_completion(self, prompt, stream=False):
         template = "{prompt}"
         prompt_template = PromptTemplate(template=template, input_variables=["prompt"])
-        
+
         callbacks = [StreamingStdOutCallbackHandler()] if stream else None
-        
+
         llm = ChatOpenAI(
             openai_api_key=self.api_key, 
             model="gpt-4o-mini",
             streaming=stream,
             callbacks=callbacks
         )
-        
+
         chain = prompt_template | llm
-        
+
         result = chain.invoke({"prompt": prompt})
-        
+
         if not stream:
             return result.content.strip()
 
