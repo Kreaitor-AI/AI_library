@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
