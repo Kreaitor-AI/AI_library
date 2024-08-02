@@ -5,10 +5,11 @@ class StabilityImageGenerator:
         self.api_key = api_key
         self.base_url = "https://api.stability.ai/v2beta/stable-image/generate/sd3"
         self.headers = {
-            "authorization": f"Bearer {self.api_key}"
+            "authorization": f"Bearer {self.api_key}",
+            "accept": "image/*"
         }
     
-    def generate_image(self, prompt, aspect_ratio="1:1", model="sd3-medium", seed=0, output_format="png", negative_prompt=None):
+    def generate_image(self, prompt, aspect_ratio="1:1", model="sd3-large", seed=0, output_format="png", negative_prompt=None):
         data = {
             "prompt": prompt,
             "aspect_ratio": aspect_ratio,
@@ -23,6 +24,7 @@ class StabilityImageGenerator:
         response = requests.post(
             self.base_url,
             headers=self.headers,
+            files={"none": ''},  # Ensures the request is recognized as multipart/form-data
             data=data
         )
         
