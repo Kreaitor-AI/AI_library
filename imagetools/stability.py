@@ -8,25 +8,25 @@ class StabilityImageGenerator:
     def generate_image(self, prompt, image=None, model="sd3-medium", mode="text-to-image", output_format="jpeg", aspect_ratio="1:1", seed=0, strength=0.75):
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Accept": "image/*"
+            "Accept": "image/*",
         }
         
         params = {
             "prompt": prompt,
             "seed": seed,
             "output_format": output_format,
-            "model": model
+            "model": model,
         }
         
         if mode == "image-to-image":
             if image is None:
                 raise ValueError("Image is required for image-to-image mode")
             params.update({
-                "image": image,
                 "strength": strength,
                 "mode": "image-to-image"
             })
             files = {"image": open(image, 'rb')}
+            headers["Content-Type"] = "multipart/form-data"
         else:
             params.update({
                 "aspect_ratio": aspect_ratio,
@@ -38,11 +38,14 @@ class StabilityImageGenerator:
         return response
     
     def _send_request(self, headers, params, files):
-        response = requests.post(self.host, headers=headers, params=params, files=files)
-        if response.status_code == 200:
+        try:
+            response = requests.post(self.host, headers=headers, params=params, files=files)
+            response.raise_for_status()  # Raise an HTTPError for bad responses
             return response.content
-        else:
-            raise Exception(str(response.json()))
+        except requests.HTTPError as http_err:
+            raise Exception(f"HTTP error occurred: {http_err}")
+        except Exception as err:
+            raise Exception(f"An error occurred: {err}")
 
 def stability(api_key, prompt, image=None, model="sd3-medium", mode="text-to-image", output_format="jpeg", aspect_ratio="1:1", seed=0, strength=0.75):
     generator = StabilityImageGenerator(api_key)
