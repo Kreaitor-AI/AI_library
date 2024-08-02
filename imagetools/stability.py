@@ -20,11 +20,12 @@ class StabilityImageGenerator:
             "seed": seed
         }
         
-        # Handle mode-specific parameters
         if mode == "image-to-image":
             if image is None:
                 raise ValueError("Image is required for image-to-image mode")
-            files = {"image": open(image, 'rb')}
+            files = {
+                "image": open(image, 'rb')
+            }
             data.update({
                 "strength": strength,
                 "mode": "image-to-image"
@@ -34,12 +35,6 @@ class StabilityImageGenerator:
                 raise ValueError("Mode 'image-to-image' requires an image file")
             data["mode"] = "text-to-image"
         
-        # Debugging information
-        print("Request URL:", self.host)
-        print("Request Headers:", headers)
-        print("Request Params:", data)
-        print("Request Files:", files)
-
         response = self._send_request(headers, data, files)
         return response
     
