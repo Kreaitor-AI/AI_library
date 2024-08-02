@@ -8,41 +8,44 @@ class StabilityImageGenerator:
     def generate_image(self, prompt, image=None, model="sd3-medium", mode=None, output_format="jpeg", aspect_ratio="1:1", seed=0, strength=0.75):
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Accept": "image/*",
+            "Accept": "image/*"  # Change to "application/json" if you want JSON base64 response
         }
         
-        params = {
+        files = None
+        data = {
             "prompt": prompt,
-            "seed": seed,
-            "output_format": output_format,
             "model": model,
-            "aspect_ratio": aspect_ratio
+            "output_format": output_format,
+            "aspect_ratio": aspect_ratio,
+            "seed": seed
         }
-
+        
+        # Handle mode-specific parameters
         if mode == "image-to-image":
             if image is None:
                 raise ValueError("Image is required for image-to-image mode")
-            params.update({
-                "strength": strength
-            })
             files = {"image": open(image, 'rb')}
+            data.update({
+                "strength": strength,
+                "mode": "image-to-image"
+            })
         else:
             if mode:
                 raise ValueError("Mode 'image-to-image' requires an image file")
-            files = None
+            data["mode"] = "text-to-image"
         
         # Debugging information
         print("Request URL:", self.host)
         print("Request Headers:", headers)
-        print("Request Params:", params)
+        print("Request Params:", data)
         print("Request Files:", files)
 
-        response = self._send_request(headers, params, files)
+        response = self._send_request(headers, data, files)
         return response
     
-    def _send_request(self, headers, params, files):
+    def _send_request(self, headers, data, files):
         try:
-            response = requests.post(self.host, headers=headers, params=params, files=files)
+            response = requests.post(self.host, headers=headers, data=data, files=files)
             response.raise_for_status()  # Raise an HTTPError for bad responses
             return response.content
         except requests.HTTPError as http_err:
