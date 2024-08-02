@@ -38,6 +38,8 @@ class StabilityImageGenerator:
         if response.status_code == 200:
             return response.json() if headers["Accept"] == "application/json" else response.content
         else:
+            print(f"Error: {response.status_code}")
+            print(f"Response content: {response.content.decode('utf-8')}")
             response.raise_for_status()
 
 def stability(api_key, prompt, image=None, strength=None, mode="text-to-image", 
