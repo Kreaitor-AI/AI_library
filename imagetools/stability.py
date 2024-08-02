@@ -16,13 +16,14 @@ class StabilityImageGenerator:
             "seed": seed,
             "output_format": output_format,
             "model": model,
+            "aspect_ratio": aspect_ratio
         }
 
         if mode == "image-to-image":
             if image is None:
                 raise ValueError("Image is required for image-to-image mode")
             params.update({
-                "strength": strength,
+                "strength": strength
             })
             files = {"image": open(image, 'rb')}
         else:
@@ -30,6 +31,12 @@ class StabilityImageGenerator:
                 raise ValueError("Mode 'image-to-image' requires an image file")
             files = None
         
+        # Debugging information
+        print("Request URL:", self.host)
+        print("Request Headers:", headers)
+        print("Request Params:", params)
+        print("Request Files:", files)
+
         response = self._send_request(headers, params, files)
         return response
     
@@ -39,7 +46,7 @@ class StabilityImageGenerator:
             response.raise_for_status()  # Raise an HTTPError for bad responses
             return response.content
         except requests.HTTPError as http_err:
-            raise Exception(f"HTTP error occurred: {http_err}")
+            raise Exception(f"HTTP error occurred: {http_err}\nResponse Content: {http_err.response.text}")
         except Exception as err:
             raise Exception(f"An error occurred: {err}")
 
