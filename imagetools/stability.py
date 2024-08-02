@@ -9,7 +9,7 @@ class StabilityImageGenerator:
             "accept": "image/*"
         }
     
-    def generate_image(self, prompt, aspect_ratio="1:1", model="sd3-medium", seed=0, output_format="png", negative_prompt=None):
+    def generate_image(self, prompt, aspect_ratio="1:1", model="sd3-large", seed=0, output_format="png", negative_prompt=None):
         data = {
             "prompt": prompt,
             "aspect_ratio": aspect_ratio,
