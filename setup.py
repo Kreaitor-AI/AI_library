@@ -14,6 +14,7 @@ setup(
         "pyyaml",
         "together",
         "pydub",
+        "boto3",
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
