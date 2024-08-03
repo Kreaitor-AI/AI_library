@@ -1,6 +1,7 @@
 import requests
 import boto3
 from botocore.exceptions import NoCredentialsError
+import uuid
 
 class StabilityImageGenerator:
     def __init__(self, api_key, aws_access_key, aws_secret_key, bucket_name):
@@ -17,7 +18,7 @@ class StabilityImageGenerator:
         )
         self.bucket_name = bucket_name
     
-    def generate_image(self, prompt, aspect_ratio="1:1", model="sd3-medium", seed=0, output_format="jpeg", negative_prompt=None):
+    def generate_image(self, prompt, aspect_ratio="1:1", model="sd3-large", seed=0, output_format="png", negative_prompt=None):
         data = {
             "prompt": prompt,
             "aspect_ratio": aspect_ratio,
@@ -32,7 +33,7 @@ class StabilityImageGenerator:
         response = requests.post(
             self.base_url,
             headers=self.headers,
-            files={"none": ''}, 
+            files={"none": ''},  # Ensures the request is recognized as multipart/form-data
             data=data
         )
         
@@ -44,12 +45,11 @@ class StabilityImageGenerator:
     def upload_image_to_s3(self, image_content, s3_file_path):
         try:
             self.s3_client.put_object(Bucket=self.bucket_name, Key=s3_file_path, Body=image_content)
-            print(f"Image successfully uploaded to S3 at {s3_file_path}")
             return f"https://{self.bucket_name}.s3.amazonaws.com/{s3_file_path}"
         except NoCredentialsError:
             raise Exception("Credentials not available for AWS S3")
 
-def stability(api_key, aws_access_key, aws_secret_key, bucket_name, prompt, aspect_ratio="1:1", model="sd3-medium", seed=0, output_format="jpeg", negative_prompt=None, s3_file_path="output_image.jpeg"):
+def stability(api_key, aws_access_key, aws_secret_key, bucket_name, prompt, aspect_ratio="1:1", model="sd3-large", seed=0, output_format="png", negative_prompt=None):
     generator = StabilityImageGenerator(api_key, aws_access_key, aws_secret_key, bucket_name)
     image_content = generator.generate_image(
         prompt=prompt,
@@ -59,4 +59,8 @@ def stability(api_key, aws_access_key, aws_secret_key, bucket_name, prompt, aspe
         output_format=output_format,
         negative_prompt=negative_prompt
     )
+
+    unique_id = uuid.uuid4()
+    s3_file_path = f"images/{unique_id}.{output_format}"
+    
     return generator.upload_image_to_s3(image_content, s3_file_path)
