@@ -33,7 +33,7 @@ class StabilityImageGenerator:
         response = requests.post(
             self.base_url,
             headers=self.headers,
-            files={"none": ''},  # Ensures the request is recognized as multipart/form-data
+            files={"none": ''}, 
             data=data
         )
         
