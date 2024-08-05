@@ -5,6 +5,7 @@ from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
 import yaml
 import pkg_resources
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
@@ -35,7 +36,7 @@ class LiveWebToolkit:
         except Exception as e:
             print(f"Error during search: {e}")
             return []
-        
+
         soup = BeautifulSoup(response.text, "html.parser")
         results = []
         for item in soup.find_all('div', class_='tF2Cxc'):
@@ -50,17 +51,17 @@ class LiveWebToolkit:
             response = requests.get(url, timeout=10)  # 10 seconds timeout
             response.raise_for_status()
             if response.status_code == 403:
-                print(f"Access forbidden for {url}. Skipping.")
+                print(f"Access forbidden for URL: {url}")
                 return None
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all('p')
             content = "\n".join([para.get_text() for para in paragraphs])
             return content
         except HTTPError as e:
-            print(f"HTTP error during content fetch from {url}: {e}. Skipping.")
+            print(f"HTTP error during content fetch: {e}")
             return None
         except Exception as e:
-            print(f"Error during content fetch from {url}: {e}. Skipping.")
+            print(f"Error during content fetch: {e}")
             return None
 
     def process_web_content_with_llm(self, contents):
@@ -75,11 +76,20 @@ class LiveWebToolkit:
         if not search_results:
             return "No search results found."
 
+        urls = [link for _, link, _ in search_results]
         fetched_content = []
-        for _, link, _ in search_results:
-            content = self.fetch_web_content(link)
-            if content:
-                fetched_content.append(content)
+
+        # Using ThreadPoolExecutor to fetch content concurrently
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            future_to_url = {executor.submit(self.fetch_web_content, url): url for url in urls}
+            for future in as_completed(future_to_url):
+                url = future_to_url[future]
+                try:
+                    content = future.result()
+                    if content:
+                        fetched_content.append(content)
+                except Exception as e:
+                    print(f"Error fetching content from URL {url}: {e}")
 
         if fetched_content:
             final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
