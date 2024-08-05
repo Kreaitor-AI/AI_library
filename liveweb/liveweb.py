@@ -1,10 +1,9 @@
-# web_toolkit.py
-
 import requests
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnableLambda
 import yaml
 import pkg_resources
 import time
@@ -19,11 +18,13 @@ class LiveWebToolkit:
             self.prompts = yaml.safe_load(file)
         self.max_retries = max_retries
 
+        # Define the prompt templates
+        self.refine_query_prompt = PromptTemplate(template=self.prompts['refine_search_query'], input_variables=["query"])
+        self.summarize_content_prompt = PromptTemplate(template=self.prompts['summarize_content'], input_variables=["content"])
+
     def refine_search_query(self, query):
-        template = self.prompts['refine_search_query']
-        prompt = PromptTemplate(template=template, input_variables=["query"])
-        result = prompt | self.llm
-        return result.invoke({"query": query}).content.strip()
+        result = (self.refine_query_prompt | self.llm).invoke({"query": query})
+        return result.content.strip()
 
     def perform_google_search(self, query, num_results):
         headers = {
@@ -61,15 +62,12 @@ class LiveWebToolkit:
         return None
 
     def process_web_content_with_llm(self, contents):
-        template = self.prompts['summarize_content']
-        prompt = PromptTemplate(template=template, input_variables=["content"])
         processed_summaries = []
-        max_chunk_length = 50000
+        max_chunk_length = 16000
         content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
         for chunk in content_chunks:
-            result = prompt | self.llm
-            summary = result.invoke({"content": chunk}).content
-            processed_summaries.append(summary)
+            result = (self.summarize_content_prompt | self.llm).invoke({"content": chunk})
+            processed_summaries.append(result.content)
         return " ".join(processed_summaries)
 
     def execute_toolkit(self, initial_query, num_results):
