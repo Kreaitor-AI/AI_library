@@ -28,7 +28,7 @@ class LiveWebToolkit:
         }
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         try:
-            response = requests.get(search_url, headers=headers, timeout=10)  # 10 seconds timeout
+            response = requests.get(search_url, headers=headers, timeout=20) 
             response.raise_for_status()
         except HTTPError:
             return []
@@ -46,7 +46,7 @@ class LiveWebToolkit:
 
     def fetch_web_content(self, url):
         try:
-            response = requests.get(url, timeout=10)  # 10 seconds timeout
+            response = requests.get(url, timeout=20)  # 10 seconds timeout
             response.raise_for_status()
             if response.status_code == 403:
                 return None
