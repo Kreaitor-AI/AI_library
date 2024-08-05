@@ -1,10 +1,13 @@
 import aiohttp
 import asyncio
+import nest_asyncio
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
 import yaml
 import pkg_resources
+
+nest_asyncio.apply()
 
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
@@ -88,3 +91,10 @@ def web_summary(api_key, initial_query, num_results, prompts_file=None):
     toolkit = LiveWebToolkit(api_key, prompts_file)
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(toolkit.execute_toolkit(initial_query, num_results))
+
+# Usage example
+openai_api_key = 'your_openai_api_key'
+query = "Your search query"
+num_results = 10
+summary = web_summary(openai_api_key, query, num_results)
+print(summary)
