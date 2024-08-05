@@ -14,66 +14,70 @@ class LiveWebToolkit:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
             self.prompts = yaml.safe_load(file)
-
-    def refine_search_query(self, query):
-        template = self.prompts['refine_search_query']
+    
+    def refine_query(self, initial_query):
+        template = self.prompts["refine_query"]
         prompt = PromptTemplate(template=template, input_variables=["query"])
-        result = prompt | self.llm
-        return result.invoke({"query": query}).content.strip()
+        llm_chain = prompt | self.llm
 
-    def perform_google_search(self, query, num_results):
+        result = llm_chain.invoke({"query": initial_query})
+
+        return result.content.strip()
+
+    def google_search(self, query, num_results=10):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         response = requests.get(search_url, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
+
         results = []
         for item in soup.find_all('div', class_='tF2Cxc'):
             title = item.find('h3').text if item.find('h3') else 'No title'
             link = item.find('a')['href'] if item.find('a') else 'No link'
             snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
-            results.append((title, link, snippet))
+            results.append((snippet, link))
+
         return results
 
-    def fetch_web_content(self, url):
+    def fetch_content(self, url):
         try:
             response = requests.get(url)
-            response.raise_for_status()
-            if response.status_code == 403:
-                return None
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all('p')
             content = "\n".join([para.get_text() for para in paragraphs])
             return content
-        except HTTPError:
-            return None
-        except Exception:
-            return None
+        except Exception as e:
+            return str(e)
 
-    def process_web_content_with_llm(self, contents):
-        template = self.prompts['summarize_content']
+    def process_scraped_content_with_llm(self, contents):
+        template = self.prompts["process_content"]
         prompt = PromptTemplate(template=template, input_variables=["content"])
-        result = prompt | self.llm
-        return result.invoke({"content": contents}).content.strip()
+        llm_chain = prompt | self.llm
+
+        processed_summaries = []
+
+        max_chunk_length = 16000
+        content_chunks = []
+        for content in contents:
+            chunks = [content[i:i + max_chunk_length] for i in range(0, len(content), max_chunk_length)]
+            content_chunks.extend(chunks)
+        results = llm_chain.batch([{"content": chunk} for chunk in content_chunks], config={"max_concurrency": 10})
+
+        for result in results:
+            processed_summaries.append(result.content)
+
+        final_summary = " ".join(processed_summaries)
+
+        return final_summary
 
     def execute_toolkit(self, initial_query, num_results):
-        refined_query = self.refine_search_query(initial_query)
-        search_results = self.perform_google_search(refined_query, num_results)
-        if not search_results:
-            return "No search results found."
-
-        fetched_content = []
-        for _, link, _ in search_results:
-            content = self.fetch_web_content(link)
-            if content:
-                fetched_content.append(content)
-
-        if fetched_content:
-            final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
-            if final_summary.strip():
-                return final_summary
-        return "Failed to get a valid response."
+        refined_query = self.refine_query(initial_query)
+        search_results = self.google_search(refined_query, num_results)
+        contents = [self.fetch_content(link) for _, link in search_results]
+        summary = self.process_scraped_content_with_llm(contents)
+        return summary
 
 def web_summary(api_key, initial_query, num_results, prompts_file=None):
     toolkit = LiveWebToolkit(api_key, prompts_file)
