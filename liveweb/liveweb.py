@@ -21,7 +21,8 @@ class LiveWebToolkit:
         template = self.prompts['refine_search_query']
         prompt = PromptTemplate(template=template, input_variables=["query"])
         result = prompt | self.llm
-        return result.invoke({"query": query}).content.strip()
+        refined_query = result.invoke({"query": query}).content.strip()
+        return refined_query
 
     def perform_google_search(self, query, num_results):
         headers = {
@@ -62,7 +63,7 @@ class LiveWebToolkit:
         template = self.prompts['summarize_content']
         prompt = PromptTemplate(template=template, input_variables=["content"])
         processed_summaries = []
-        max_chunk_length = 50000
+        max_chunk_length = 16000  # Adjusted chunk length to avoid token limits
         content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
         for chunk in content_chunks:
             result = prompt | self.llm
