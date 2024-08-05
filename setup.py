@@ -14,6 +14,7 @@ setup(
         "pyyaml",
         "together",
         "pydub",
+        "langchain_together",
         "boto3",
     ],
     package_data={
