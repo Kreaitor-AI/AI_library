@@ -9,3 +9,5 @@ pyyaml
 together
 pydub
 boto3
+aiohttp
+asyncio
