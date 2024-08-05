@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
