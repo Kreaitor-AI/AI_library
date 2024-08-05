@@ -23,5 +23,5 @@ Strictly adhere to [Image i: image prompt]
 Total number of images to be used: {img_number}
 Each image on a new line only, and no two images together one below another.
 
-Format the content accordingly. Don't start with 'Here is the formatted essay content:'. Directly start with the blog.
+Format the content accordingly. Don't start with 'Here is the formatted essay content:'. Directly start with the essay.
 """
