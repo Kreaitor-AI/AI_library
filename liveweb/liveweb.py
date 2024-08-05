@@ -36,11 +36,9 @@ class LiveWebToolkit:
             try:
                 async with session.get(search_url, headers=headers, timeout=20) as response:
                     if response.status != 200:
-                        print(f"Error: Received status code {response.status}")
                         return []
                     text = await response.text()
-            except Exception as e:
-                print(f"Error during Google search request: {e}")
+            except Exception:
                 return []
 
         soup = BeautifulSoup(text, "html.parser")
@@ -51,8 +49,8 @@ class LiveWebToolkit:
                 link = item.find('a')['href'] if item.find('a') else 'No link'
                 snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
                 results.append((title, link, snippet))
-            except Exception as e:
-                print(f"Error parsing search result item: {e}")
+            except Exception:
+                continue
         return results
 
     async def fetch_web_content(self, url, session):
@@ -65,8 +63,7 @@ class LiveWebToolkit:
                 paragraphs = soup.find_all('p')
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
-        except Exception as e:
-            print(f"Error fetching content from {url}: {e}")
+        except Exception:
             return None
 
     async def fetch_all_content(self, urls):
