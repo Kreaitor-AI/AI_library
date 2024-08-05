@@ -1,4 +1,4 @@
-essay_format = """
+article_format = """
 Format the following article content {summary} using below instructions:
 
 **Instructions:**
