@@ -17,6 +17,7 @@ setup(
         "langchain_together",
         "aiohttp",
         "asyncio",
+        "nest_asyncio",
         "boto3",
     ],
     package_data={
