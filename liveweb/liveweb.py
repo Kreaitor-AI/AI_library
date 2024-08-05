@@ -3,14 +3,13 @@ import yaml
 import requests
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
-from langchain_openai import ChatOpenAI
-from langchain_core.runnables import RunnableLambda
+from langchain_together import ChatTogether
 import pkg_resources
 
 class LiveWebToolkit:
-    def __init__(self, api_key, prompts_file=None):
+    def __init__(self, api_key, model="meta-llama/Llama-3-70b-chat-hf", prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.llm = ChatTogether(together_api_key=api_key, model=model)
         if prompts_file is None:
             # Use the default prompts file within the package
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
@@ -75,6 +74,6 @@ class LiveWebToolkit:
         summary = self.process_scraped_content_with_llm(" ".join(contents))
         return summary
 
-def web_summary(api_key, initial_query, num_results=10, prompts_file=None):
-    toolkit = LiveWebToolkit(api_key, prompts_file)
+def web_summary(api_key, initial_query, num_results=10, model="meta-llama/Llama-3-70b-chat-hf", prompts_file=None):
+    toolkit = LiveWebToolkit(api_key, model, prompts_file)
     return toolkit.web_summary(initial_query, num_results)
