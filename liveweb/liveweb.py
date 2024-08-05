@@ -29,11 +29,7 @@ class LiveWebToolkit:
         try:
             response = requests.get(search_url, headers=headers, timeout=10)  # 10 seconds timeout
             response.raise_for_status()
-        except HTTPError as e:
-            print(f"HTTP error during search: {e}")
-            return []
-        except Exception as e:
-            print(f"Error during search: {e}")
+        except Exception:
             return []
         
         soup = BeautifulSoup(response.text, "html.parser")
@@ -49,18 +45,11 @@ class LiveWebToolkit:
         try:
             response = requests.get(url, timeout=10)  # 10 seconds timeout
             response.raise_for_status()
-            if response.status_code == 403:
-                print(f"Access forbidden for {url}. Skipping.")
-                return None
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all('p')
             content = "\n".join([para.get_text() for para in paragraphs])
             return content
-        except HTTPError as e:
-            print(f"HTTP error during content fetch from {url}: {e}. Skipping.")
-            return None
-        except Exception as e:
-            print(f"Error during content fetch from {url}: {e}. Skipping.")
+        except Exception:
             return None
 
     def process_web_content_with_llm(self, contents):
