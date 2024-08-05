@@ -15,7 +15,7 @@ except ImportError:
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
@@ -36,9 +36,10 @@ class LiveWebToolkit:
             try:
                 async with session.get(search_url, headers=headers, timeout=20) as response:
                     if response.status != 200:
+                        print(f"Error: Received status code {response.status}")
                         return []
                     text = await response.text()
-            except Exception:
+            except Exception as e:
                 return []
 
         soup = BeautifulSoup(text, "html.parser")
@@ -49,8 +50,8 @@ class LiveWebToolkit:
                 link = item.find('a')['href'] if item.find('a') else 'No link'
                 snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
                 results.append((title, link, snippet))
-            except Exception:
-                continue
+            except Exception as e:
+                print(f"Error parsing search result item: {e}")
         return results
 
     async def fetch_web_content(self, url, session):
@@ -63,7 +64,8 @@ class LiveWebToolkit:
                 paragraphs = soup.find_all('p')
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
-        except Exception:
+        except Exception as e:
+            
             return None
 
     async def fetch_all_content(self, urls):
