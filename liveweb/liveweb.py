@@ -13,13 +13,19 @@ except ImportError:
     pass  # nest_asyncio is not required in non-Jupyter environments
 
 class LiveWebToolkit:
-    def __init__(self, api_key, prompts_file=None):
+    def __init__(self, api_key, prompts_file=None, max_retries=5):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
             self.prompts = yaml.safe_load(file)
+        self.max_retries = max_retries
+        self.user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        ]
 
     def refine_search_query(self, query):
         template = self.prompts['refine_search_query']
@@ -27,9 +33,9 @@ class LiveWebToolkit:
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
 
-    async def perform_google_search(self, query, num_results=20):
+    async def perform_google_search(self, query, num_results=10, retry_count=0):
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": self.user_agents[retry_count % len(self.user_agents)]
         }
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         async with aiohttp.ClientSession() as session:
@@ -37,10 +43,17 @@ class LiveWebToolkit:
                 async with session.get(search_url, headers=headers, timeout=20) as response:
                     if response.status != 200:
                         print(f"Error: Received status code {response.status}")
-                        return []
+                        if retry_count < self.max_retries:
+                            return await self.perform_google_search(query, num_results, retry_count + 1)
+                        else:
+                            return []
                     text = await response.text()
             except Exception as e:
-                return []
+                print(f"Error during Google search request: {e}")
+                if retry_count < self.max_retries:
+                    return await self.perform_google_search(query, num_results, retry_count + 1)
+                else:
+                    return []
 
         soup = BeautifulSoup(text, "html.parser")
         results = []
@@ -56,7 +69,7 @@ class LiveWebToolkit:
 
     async def fetch_web_content(self, url, session):
         try:
-            async with session.get(url, timeout=20) as response:
+            async with session.get(url, timeout=10) as response:
                 if response.status == 403 or response.status != 200:
                     return None  # Skip URLs with 403 status or any non-200 status
                 text = await response.text()
@@ -65,7 +78,7 @@ class LiveWebToolkit:
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
         except Exception as e:
-            
+            print(f"Error fetching content from {url}: {e}")
             return None
 
     async def fetch_all_content(self, urls):
