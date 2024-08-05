@@ -34,7 +34,7 @@ class LiveWebToolkit:
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(search_url, headers=headers, timeout=10) as response:
+                async with session.get(search_url, headers=headers, timeout=20) as response:
                     if response.status != 200:
                         return []
                     text = await response.text()
@@ -52,7 +52,7 @@ class LiveWebToolkit:
 
     async def fetch_web_content(self, url, session):
         try:
-            async with session.get(url, timeout=10) as response:
+            async with session.get(url, timeout=20) as response:
                 if response.status == 403 or response.status != 200:
                     return None
                 text = await response.text()
