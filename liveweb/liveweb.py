@@ -33,14 +33,14 @@ class LiveWebToolkit:
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
 
-    async def perform_google_search(self, query, num_results=20, retry_count=2):
+    async def perform_google_search(self, query, num_results=5, retry_count=2):
         headers = {
             "User-Agent": self.user_agents[retry_count % len(self.user_agents)]
         }
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(search_url, headers=headers, timeout=20) as response:
+                async with session.get(search_url, headers=headers, timeout=10) as response:
                     if response.status != 200:
                         if retry_count < self.max_retries:
                             return await self.perform_google_search(query, num_results, retry_count + 1)
@@ -68,7 +68,7 @@ class LiveWebToolkit:
 
     async def fetch_web_content(self, url, session):
         try:
-            async with session.get(url, timeout=20) as response:
+            async with session.get(url, timeout=10) as response:
                 if response.status == 403 or response.status != 200:
                     return None  
                 text = await response.text()
