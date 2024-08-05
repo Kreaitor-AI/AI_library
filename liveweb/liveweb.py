@@ -16,7 +16,7 @@ class LiveWebToolkit:
             self.prompts = yaml.safe_load(file)
     
     def refine_query(self, initial_query):
-        template = self.prompts["refine_query"]
+        template = self.prompts["refine_search_query"]
         prompt = PromptTemplate(template=template, input_variables=["query"])
         llm_chain = prompt | self.llm
 
