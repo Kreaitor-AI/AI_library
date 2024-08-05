@@ -10,7 +10,7 @@ try:
     import nest_asyncio
     nest_asyncio.apply()
 except ImportError:
-    pass  # nest_asyncio is not required in non-Jupyter environments
+    pass  
 
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None, max_retries=5):
@@ -42,14 +42,12 @@ class LiveWebToolkit:
             try:
                 async with session.get(search_url, headers=headers, timeout=20) as response:
                     if response.status != 200:
-                        print(f"Error: Received status code {response.status}")
                         if retry_count < self.max_retries:
                             return await self.perform_google_search(query, num_results, retry_count + 1)
                         else:
                             return []
                     text = await response.text()
-            except Exception as e:
-                print(f"Error during Google search request: {e}")
+            except Exception:
                 if retry_count < self.max_retries:
                     return await self.perform_google_search(query, num_results, retry_count + 1)
                 else:
@@ -63,21 +61,22 @@ class LiveWebToolkit:
                 link = item.find('a')['href'] if item.find('a') else 'No link'
                 snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
                 results.append((title, link, snippet))
-            except Exception as e:
-                
+            except Exception:
+                continue
+
         return results
 
     async def fetch_web_content(self, url, session):
         try:
             async with session.get(url, timeout=10) as response:
                 if response.status == 403 or response.status != 200:
-                    return None  # Skip URLs with 403 status or any non-200 status
+                    return None  
                 text = await response.text()
                 soup = BeautifulSoup(text, 'html.parser')
                 paragraphs = soup.find_all('p')
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
-        except Exception as e:
+        except Exception:
             return None
 
     async def fetch_all_content(self, urls):
