@@ -52,7 +52,7 @@ class LiveWebToolkit:
             return str(e)
 
     def process_scraped_content_with_llm(self, contents):
-        template = self.prompts["process_content"]
+        template = self.prompts["summarize_content"]
         prompt = PromptTemplate(template=template, input_variables=["content"])
         llm_chain = prompt | self.llm
 
