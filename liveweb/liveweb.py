@@ -27,7 +27,7 @@ class LiveWebToolkit:
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
 
-    async def perform_google_search(self, query, num_results=10):
+    async def perform_google_search(self, query, num_results=20):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -56,7 +56,7 @@ class LiveWebToolkit:
 
     async def fetch_web_content(self, url, session):
         try:
-            async with session.get(url, timeout=10) as response:
+            async with session.get(url, timeout=20) as response:
                 if response.status == 403 or response.status != 200:
                     return None  # Skip URLs with 403 status or any non-200 status
                 text = await response.text()
