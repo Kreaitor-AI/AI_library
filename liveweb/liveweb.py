@@ -33,7 +33,7 @@ class LiveWebToolkit:
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
 
-    async def perform_google_search(self, query, num_results=10, retry_count=0):
+    async def perform_google_search(self, query, num_results=20, retry_count=2):
         headers = {
             "User-Agent": self.user_agents[retry_count % len(self.user_agents)]
         }
@@ -68,7 +68,7 @@ class LiveWebToolkit:
 
     async def fetch_web_content(self, url, session):
         try:
-            async with session.get(url, timeout=10) as response:
+            async with session.get(url, timeout=20) as response:
                 if response.status == 403 or response.status != 200:
                     return None  
                 text = await response.text()
