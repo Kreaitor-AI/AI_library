@@ -1,18 +1,21 @@
 import aiohttp
 import asyncio
-import nest_asyncio
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
 import yaml
 import pkg_resources
 
-nest_asyncio.apply()
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+except ImportError:
+    pass  # nest_asyncio is not required in non-Jupyter environments
 
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
@@ -31,20 +34,25 @@ class LiveWebToolkit:
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(search_url, headers=headers, timeout=10) as response:
+                async with session.get(search_url, headers=headers, timeout=20) as response:
                     if response.status != 200:
+                        print(f"Error: Received status code {response.status}")
                         return []
                     text = await response.text()
-            except Exception:
+            except Exception as e:
+                print(f"Error during Google search request: {e}")
                 return []
 
         soup = BeautifulSoup(text, "html.parser")
         results = []
         for item in soup.find_all('div', class_='tF2Cxc'):
-            title = item.find('h3').text if item.find('h3') else 'No title'
-            link = item.find('a')['href'] if item.find('a') else 'No link'
-            snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
-            results.append((title, link, snippet))
+            try:
+                title = item.find('h3').text if item.find('h3') else 'No title'
+                link = item.find('a')['href'] if item.find('a') else 'No link'
+                snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
+                results.append((title, link, snippet))
+            except Exception as e:
+                print(f"Error parsing search result item: {e}")
         return results
 
     async def fetch_web_content(self, url, session):
@@ -57,7 +65,8 @@ class LiveWebToolkit:
                 paragraphs = soup.find_all('p')
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
-        except Exception:
+        except Exception as e:
+            print(f"Error fetching content from {url}: {e}")
             return None
 
     async def fetch_all_content(self, urls):
@@ -92,3 +101,9 @@ def web_summary(api_key, initial_query, num_results, prompts_file=None):
     loop = asyncio.get_event_loop()
     return loop.run_until_complete(toolkit.execute_toolkit(initial_query, num_results))
 
+# Usage example
+openai_api_key = 'your_openai_api_key'
+query = "Your search query"
+num_results = 10
+summary = web_summary(openai_api_key, query, num_results)
+print(summary)
