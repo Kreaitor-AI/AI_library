@@ -40,7 +40,7 @@ class LiveWebToolkit:
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.get(search_url, headers=headers, timeout=20) as response:
+                async with session.get(search_url, headers=headers, timeout=10) as response:
                     if response.status != 200:
                         print(f"Error: Received status code {response.status}")
                         if retry_count < self.max_retries:
@@ -64,12 +64,11 @@ class LiveWebToolkit:
                 snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
                 results.append((title, link, snippet))
             except Exception as e:
-                print(f"Error parsing search result item: {e}")
         return results
 
     async def fetch_web_content(self, url, session):
         try:
-            async with session.get(url, timeout=10) as response:
+            async with session.get(url, timeout=5) as response:
                 if response.status == 403 or response.status != 200:
                     return None  # Skip URLs with 403 status or any non-200 status
                 text = await response.text()
@@ -78,7 +77,6 @@ class LiveWebToolkit:
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
         except Exception as e:
-            print(f"Error fetching content from {url}: {e}")
             return None
 
     async def fetch_all_content(self, urls):
