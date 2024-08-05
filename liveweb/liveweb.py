@@ -10,14 +10,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
             self.prompts = yaml.safe_load(file)
 
     def refine_search_query(self, query):
-        template = self.prompts.get('refine_search_query', "Refine the following query to make it more precise and suitable for a Google search: {query}")
+        template = self.prompts.get('refine_search_query', "Refine the following query to make it more precise and suitable. The initial query is provided by user and might not be good for a google search. Your provided output will be used to make a Google search:\nInitial Query: {query}")
         prompt = PromptTemplate(template=template, input_variables=["query"])
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
@@ -30,11 +30,9 @@ class LiveWebToolkit:
         try:
             response = requests.get(search_url, headers=headers, timeout=10)  # 10 seconds timeout
             response.raise_for_status()
-        except HTTPError as e:
-            print(f"HTTP error during search: {e}")
+        except HTTPError:
             return []
-        except Exception as e:
-            print(f"Error during search: {e}")
+        except Exception:
             return []
 
         soup = BeautifulSoup(response.text, "html.parser")
@@ -51,21 +49,18 @@ class LiveWebToolkit:
             response = requests.get(url, timeout=10)  # 10 seconds timeout
             response.raise_for_status()
             if response.status_code == 403:
-                print(f"Access forbidden for URL: {url}")
                 return None
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all('p')
             content = "\n".join([para.get_text() for para in paragraphs])
             return content
-        except HTTPError as e:
-            print(f"HTTP error during content fetch: {e}")
+        except HTTPError:
             return None
-        except Exception as e:
-            print(f"Error during content fetch: {e}")
+        except Exception:
             return None
 
     def process_web_content_with_llm(self, contents):
-        template = self.prompts.get('summarize_content', "Summarize the following content accurately and comprehensively: {content}")
+        template = self.prompts.get('summarize_content', "Summarize the following content:\ncontent:{content}")
         prompt = PromptTemplate(template=template, input_variables=["content"])
         result = prompt | self.llm
         return result.invoke({"content": contents}).content.strip()
@@ -88,8 +83,8 @@ class LiveWebToolkit:
                     content = future.result()
                     if content:
                         fetched_content.append(content)
-                except Exception as e:
-                    print(f"Error fetching content from URL {url}: {e}")
+                except Exception:
+                    pass
 
         if fetched_content:
             final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
