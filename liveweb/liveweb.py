@@ -1,6 +1,5 @@
 import aiohttp
 import asyncio
-import logging
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
@@ -13,14 +12,10 @@ try:
 except ImportError:
     pass  # nest_asyncio is not required in non-Jupyter environments
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 class LiveWebToolkit:
     def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
@@ -41,11 +36,9 @@ class LiveWebToolkit:
             try:
                 async with session.get(search_url, headers=headers, timeout=10) as response:
                     if response.status != 200:
-                        logger.warning(f"Google search failed with status: {response.status}")
                         return []
                     text = await response.text()
-            except Exception as e:
-                logger.error(f"Exception during Google search: {e}")
+            except Exception:
                 return []
 
         soup = BeautifulSoup(text, "html.parser")
@@ -55,23 +48,19 @@ class LiveWebToolkit:
             link = item.find('a')['href'] if item.find('a') else 'No link'
             snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
             results.append((title, link, snippet))
-        if not results:
-            logger.info("No search results found in the Google search results.")
         return results
 
     async def fetch_web_content(self, url, session):
         try:
             async with session.get(url, timeout=10) as response:
                 if response.status == 403 or response.status != 200:
-                    logger.info(f"Skipping URL {url} with status: {response.status}")
                     return None
                 text = await response.text()
                 soup = BeautifulSoup(text, 'html.parser')
                 paragraphs = soup.find_all('p')
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
-        except Exception as e:
-            logger.error(f"Exception during fetching content from {url}: {e}")
+        except Exception:
             return None
 
     async def fetch_all_content(self, urls):
@@ -87,13 +76,11 @@ class LiveWebToolkit:
 
     async def execute_toolkit(self, initial_query, num_results):
         refined_query = self.refine_search_query(initial_query)
-        logger.info(f"Refined query: {refined_query}")
         search_results = await self.perform_google_search(refined_query, num_results)
         if not search_results:
             return "No search results found."
 
         urls = [link for _, link, _ in search_results]
-        logger.info(f"Found URLs: {urls}")
         fetched_content = await self.fetch_all_content(urls)
         fetched_content = [content for content in fetched_content if content]
 
