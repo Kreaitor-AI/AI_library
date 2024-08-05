@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import logging
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
@@ -10,22 +11,20 @@ try:
     import nest_asyncio
     nest_asyncio.apply()
 except ImportError:
-    pass  
+    pass  # nest_asyncio is not required in non-Jupyter environments
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class LiveWebToolkit:
-    def __init__(self, api_key, prompts_file=None, max_retries=5):
+    def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
-        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-4o-mini")
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
             self.prompts = yaml.safe_load(file)
-        self.max_retries = max_retries
-        self.user_agents = [
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        ]
 
     def refine_search_query(self, query):
         template = self.prompts['refine_search_query']
@@ -33,50 +32,46 @@ class LiveWebToolkit:
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
 
-    async def perform_google_search(self, query, num_results=5, retry_count=2):
+    async def perform_google_search(self, query, num_results=10):
         headers = {
-            "User-Agent": self.user_agents[retry_count % len(self.user_agents)]
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         async with aiohttp.ClientSession() as session:
             try:
                 async with session.get(search_url, headers=headers, timeout=10) as response:
                     if response.status != 200:
-                        if retry_count < self.max_retries:
-                            return await self.perform_google_search(query, num_results, retry_count + 1)
-                        else:
-                            return []
+                        logger.warning(f"Google search failed with status: {response.status}")
+                        return []
                     text = await response.text()
-            except Exception:
-                if retry_count < self.max_retries:
-                    return await self.perform_google_search(query, num_results, retry_count + 1)
-                else:
-                    return []
+            except Exception as e:
+                logger.error(f"Exception during Google search: {e}")
+                return []
 
         soup = BeautifulSoup(text, "html.parser")
         results = []
         for item in soup.find_all('div', class_='tF2Cxc'):
-            try:
-                title = item.find('h3').text if item.find('h3') else 'No title'
-                link = item.find('a')['href'] if item.find('a') else 'No link'
-                snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
-                results.append((title, link, snippet))
-            except Exception:
-                continue
-
+            title = item.find('h3').text if item.find('h3') else 'No title'
+            link = item.find('a')['href'] if item.find('a') else 'No link'
+            snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
+            results.append((title, link, snippet))
+        if not results:
+            logger.info("No search results found in the Google search results.")
         return results
 
     async def fetch_web_content(self, url, session):
         try:
             async with session.get(url, timeout=10) as response:
                 if response.status == 403 or response.status != 200:
-                    return None  
+                    logger.info(f"Skipping URL {url} with status: {response.status}")
+                    return None
                 text = await response.text()
                 soup = BeautifulSoup(text, 'html.parser')
                 paragraphs = soup.find_all('p')
                 content = "\n".join([para.get_text() for para in paragraphs])
                 return content
-        except Exception:
+        except Exception as e:
+            logger.error(f"Exception during fetching content from {url}: {e}")
             return None
 
     async def fetch_all_content(self, urls):
@@ -92,11 +87,13 @@ class LiveWebToolkit:
 
     async def execute_toolkit(self, initial_query, num_results):
         refined_query = self.refine_search_query(initial_query)
+        logger.info(f"Refined query: {refined_query}")
         search_results = await self.perform_google_search(refined_query, num_results)
         if not search_results:
             return "No search results found."
 
         urls = [link for _, link, _ in search_results]
+        logger.info(f"Found URLs: {urls}")
         fetched_content = await self.fetch_all_content(urls)
         fetched_content = [content for content in fetched_content if content]
 
