@@ -15,6 +15,8 @@ setup(
         "together",
         "pydub",
         "langchain_together",
+        "aiohttp",
+        "asyncio",
         "boto3",
     ],
     package_data={
