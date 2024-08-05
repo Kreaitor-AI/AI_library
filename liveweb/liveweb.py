@@ -3,28 +3,23 @@ from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
 from langchain_openai import ChatOpenAI
-from langchain_core.runnables import RunnableLambda
 import yaml
 import pkg_resources
-import time
 
 class LiveWebToolkit:
-    def __init__(self, api_key, prompts_file=None, max_retries=3):
+    def __init__(self, api_key, prompts_file=None):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
             self.prompts = yaml.safe_load(file)
-        self.max_retries = max_retries
-
-        # Define the prompt templates
-        self.refine_query_prompt = PromptTemplate(template=self.prompts['refine_search_query'], input_variables=["query"])
-        self.summarize_content_prompt = PromptTemplate(template=self.prompts['summarize_content'], input_variables=["content"])
 
     def refine_search_query(self, query):
-        result = (self.refine_query_prompt | self.llm).invoke({"query": query})
-        return result.content.strip()
+        template = self.prompts['refine_search_query']
+        prompt = PromptTemplate(template=template, input_variables=["query"])
+        result = prompt | self.llm
+        return result.invoke({"query": query}).content.strip()
 
     def perform_google_search(self, query, num_results):
         headers = {
@@ -42,54 +37,43 @@ class LiveWebToolkit:
         return results
 
     def fetch_web_content(self, url):
-        for attempt in range(self.max_retries):
-            try:
-                response = requests.get(url)
-                response.raise_for_status()
-                if response.status_code == 403:
-                    return None
-                soup = BeautifulSoup(response.content, 'html.parser')
-                paragraphs = soup.find_all('p')
-                content = "\n".join([para.get_text() for para in paragraphs])
-                if content:
-                    return content
-            except HTTPError:
-                if response.status_code == 403:
-                    return None
-            except Exception:
-                pass
-            time.sleep(2 ** attempt)
-        return None
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            if response.status_code == 403:
+                return None
+            soup = BeautifulSoup(response.content, 'html.parser')
+            paragraphs = soup.find_all('p')
+            content = "\n".join([para.get_text() for para in paragraphs])
+            return content
+        except HTTPError:
+            return None
+        except Exception:
+            return None
 
     def process_web_content_with_llm(self, contents):
-        processed_summaries = []
-        max_chunk_length = 16000
-        content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
-        for chunk in content_chunks:
-            result = (self.summarize_content_prompt | self.llm).invoke({"content": chunk})
-            processed_summaries.append(result.content)
-        return " ".join(processed_summaries)
+        template = self.prompts['summarize_content']
+        prompt = PromptTemplate(template=template, input_variables=["content"])
+        result = prompt | self.llm
+        return result.invoke({"content": contents}).content.strip()
 
     def execute_toolkit(self, initial_query, num_results):
-        for attempt in range(self.max_retries):
-            refined_query = self.refine_search_query(initial_query)
-            search_results = self.perform_google_search(refined_query, num_results)
-            if not search_results:
-                time.sleep(2 ** attempt)
-                continue
+        refined_query = self.refine_search_query(initial_query)
+        search_results = self.perform_google_search(refined_query, num_results)
+        if not search_results:
+            return "No search results found."
 
-            fetched_content = []
-            for _, link, _ in search_results:
-                content = self.fetch_web_content(link)
-                if content:
-                    fetched_content.append(content)
+        fetched_content = []
+        for _, link, _ in search_results:
+            content = self.fetch_web_content(link)
+            if content:
+                fetched_content.append(content)
 
-            if fetched_content:
-                final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
-                if final_summary.strip():
-                    return final_summary
-            time.sleep(2 ** attempt)
-        return "Failed to get a valid response after multiple attempts."
+        if fetched_content:
+            final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
+            if final_summary.strip():
+                return final_summary
+        return "Failed to get a valid response."
 
 def web_summary(api_key, initial_query, num_results, prompts_file=None):
     toolkit = LiveWebToolkit(api_key, prompts_file)
