@@ -11,3 +11,4 @@ pydub
 boto3
 aiohttp
 asyncio
+nest_asyncio
