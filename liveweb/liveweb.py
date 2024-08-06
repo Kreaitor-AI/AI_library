@@ -16,7 +16,7 @@ class LiveWebToolkit:
             self.prompts = yaml.safe_load(file)
 
     def refine_search_query(self, query):
-        template = self.prompts.get('refine_search_query', "Refine the following query to make it more precise and suitable for a Google search: {query}")
+        template = self.prompts['refine_search_query']
         prompt = PromptTemplate(template=template, input_variables=["query"])
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
@@ -55,10 +55,20 @@ class LiveWebToolkit:
             return None
 
     def process_web_content_with_llm(self, contents):
-        template = self.prompts.get('summarize_content', "Summarize the following content accurately and comprehensively: {content}")
+        template = self.prompts['summarize_content']
         prompt = PromptTemplate(template=template, input_variables=["content"])
-        result = prompt | self.llm
-        return result.invoke({"content": contents}).content.strip()
+        llm_chain = prompt | self.llm
+
+        processed_summaries = []
+        max_chunk_length = 16000  # Max tokens for the model
+        content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
+        
+        for chunk in content_chunks:
+            result = llm_chain.invoke({"content": chunk}).content
+            processed_summaries.append(result)
+
+        final_summary = " ".join(processed_summaries)
+        return final_summary
 
     def execute_toolkit(self, initial_query, num_results):
         refined_query = self.refine_search_query(initial_query)
