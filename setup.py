@@ -19,8 +19,7 @@ setup(
         "asyncio",
         "nest_asyncio",
         "boto3",
-        "torch",
-        "diffusers",
+
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
