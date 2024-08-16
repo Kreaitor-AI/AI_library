@@ -4,7 +4,7 @@ from botocore.exceptions import NoCredentialsError
 import uuid
 import os
 
-class FalImageGenerator:
+class flux:
     def __init__(self, fal_key, aws_access_key, aws_secret_key, bucket_name):
         # Initialize credentials and clients
         self.fal_key = fal_key
@@ -38,8 +38,8 @@ class FalImageGenerator:
         except NoCredentialsError:
             raise Exception("Credentials not available for AWS S3")
 
-def falai(fal_key, aws_access_key, aws_secret_key, bucket_name, prompt):
-    generator = FalImageGenerator(fal_key, aws_access_key, aws_secret_key, bucket_name)
+def flux(fal_key, aws_access_key, aws_secret_key, bucket_name, prompt):
+    generator = flux(fal_key, aws_access_key, aws_secret_key, bucket_name)
     
     # Generate the image
     image_content = generator.generate_image(prompt)
