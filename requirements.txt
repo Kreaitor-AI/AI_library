@@ -12,4 +12,4 @@ boto3
 aiohttp
 asyncio
 nest_asyncio
-
+fal-client
