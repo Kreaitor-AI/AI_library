@@ -18,6 +18,7 @@ setup(
         "aiohttp",
         "asyncio",
         "nest_asyncio",
+        "fal-client",
         "boto3",
 
     ],
