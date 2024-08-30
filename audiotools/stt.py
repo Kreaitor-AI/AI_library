@@ -48,7 +48,7 @@ class STTTools:
         result = handler.get()
         return result
 
-def submit_stt_request(api_key, audio_url, selected_language, task='transcribe', diarize=False, num_speakers=None):
+def stt(api_key, audio_url, selected_language, task='transcribe', diarize=False, num_speakers=None):
     """
     Convenience function to submit a request for transcription or translation.
 
@@ -65,3 +65,4 @@ def submit_stt_request(api_key, audio_url, selected_language, task='transcribe',
     """
     toolkit = STTTools(api_key)
     return toolkit.submit_request(audio_url, selected_language, task, diarize, num_speakers)
+
