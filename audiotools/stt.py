@@ -12,7 +12,7 @@ class STTTools:
         """
         os.environ['FAL_KEY'] = api_key
 
-    def submit_request(self, audio_url, selected_language, task='transcribe', diarize=False, num_speakers=None):
+    def submit_request(self, audio_url, selected_language, task='transcribe'):
         """
         Submit a request to the FAL API for transcription or translation.
 
@@ -20,8 +20,7 @@ class STTTools:
             audio_url (str): The URL of the audio file.
             selected_language (str): The selected language for the audio.
             task (str): The task to perform ('transcribe' or 'translate').
-            diarize (bool): Whether to diarize the audio.
-            num_speakers (int, optional): The number of speakers in the audio.
+
 
         Returns:
             dict: The result from the FAL API.
@@ -30,25 +29,20 @@ class STTTools:
             ValueError: If the selected language or task is invalid.
         """
         language_code = language_codes.get(selected_language)
-        if not language_code:
-            raise ValueError(f"Invalid language selected: {selected_language}.")
-        
-        if task not in ['transcribe', 'translate']:
-            raise ValueError(f"Invalid task: {task}. Choose 'transcribe' or 'translate'.")
+
         
         arguments = {
             "audio_url": audio_url,
             "task": task,
             "language": language_code,
-            "diarize": diarize,
-            "num_speakers": num_speakers
+            
         }
         
         handler = fal_client.submit("fal-ai/wizper", arguments=arguments)
         result = handler.get()
         return result
 
-def stt(api_key, audio_url, selected_language, task='transcribe', diarize=False, num_speakers=None):
+def stt(api_key, audio_url, selected_language, task='transcribe'):
     """
     Convenience function to submit a request for transcription or translation.
 
@@ -57,12 +51,11 @@ def stt(api_key, audio_url, selected_language, task='transcribe', diarize=False,
         audio_url (str): The URL of the audio file.
         selected_language (str): The selected language for the audio.
         task (str): The task to perform ('transcribe' or 'translate').
-        diarize (bool): Whether to diarize the audio.
-        num_speakers (int, optional): The number of speakers in the audio.
+
 
     Returns:
         dict: The result from the FAL API.
     """
     toolkit = STTTools(api_key)
-    return toolkit.submit_request(audio_url, selected_language, task, diarize, num_speakers)
+    return toolkit.submit_request(audio_url, selected_language, task)
 
