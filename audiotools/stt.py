@@ -44,7 +44,7 @@ class STTTools:
             "num_speakers": num_speakers
         }
         
-        handler = fal_client.submit("fal-ai/whisper", arguments=arguments)
+        handler = fal_client.submit("fal-ai/wizper", arguments=arguments)
         result = handler.get()
         return result
 
