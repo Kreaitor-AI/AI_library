@@ -5,34 +5,44 @@ from langchain_openai import ChatOpenAI
 import yaml
 import pkg_resources
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Tuple, Optional
 
 class LiveWebToolkit:
-    def __init__(self, api_key, prompts_file=None):
+    def __init__(self, api_key: str, prompts_file: Optional[str] = None):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.prompts = self.load_prompts(prompts_file)
+
+    def load_prompts(self, prompts_file: Optional[str]) -> dict:
         if prompts_file is None:
             prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
-            self.prompts = yaml.safe_load(file)
+            return yaml.safe_load(file)
 
-    def refine_search_query(self, query):
+    def refine_search_query(self, query: str) -> str:
         template = self.prompts['refine_search_query']
         prompt = PromptTemplate(template=template, input_variables=["query"])
         result = prompt | self.llm
         return result.invoke({"query": query}).content.strip()
 
-    def perform_google_search(self, query, num_results=10):
+    def perform_google_search(self, query: str, num_results: int = 10) -> List[Tuple[str, str, str]]:
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            )
         }
         search_url = f"https://www.google.com/search?q={query}&num={num_results}"
         try:
-            response = requests.get(search_url, headers=headers, timeout=10)  # 10 seconds timeout
+            response = requests.get(search_url, headers=headers, timeout=10)
             response.raise_for_status()
-        except Exception:
+        except requests.RequestException:
             return []
 
         soup = BeautifulSoup(response.text, "html.parser")
+        return self.parse_google_results(soup)
+
+    def parse_google_results(self, soup: BeautifulSoup) -> List[Tuple[str, str, str]]:
         results = []
         for item in soup.find_all('div', class_='tF2Cxc'):
             title = item.find('h3').text if item.find('h3') else 'No title'
@@ -41,20 +51,19 @@ class LiveWebToolkit:
             results.append((title, link, snippet))
         return results
 
-    def fetch_web_content(self, url):
+    def fetch_web_content(self, url: str) -> Optional[str]:
         try:
-            response = requests.get(url, timeout=10)  # 10 seconds timeout
+            response = requests.get(url, timeout=10)
             response.raise_for_status()
             if response.status_code == 403:
                 return None
             soup = BeautifulSoup(response.content, 'html.parser')
             paragraphs = soup.find_all('p')
-            content = "\n".join([para.get_text() for para in paragraphs])
-            return content
-        except Exception:
+            return "\n".join(para.get_text() for para in paragraphs)
+        except (requests.RequestException, Exception):
             return None
 
-    def process_web_content_with_llm(self, contents):
+    def process_web_content_with_llm(self, contents: str) -> str:
         template = self.prompts['summarize_content']
         prompt = PromptTemplate(template=template, input_variables=["content"])
         llm_chain = prompt | self.llm
@@ -62,34 +71,20 @@ class LiveWebToolkit:
         processed_summaries = []
         max_chunk_length = 16000  # Max tokens for the model
         content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
-        
+
         for chunk in content_chunks:
-            result = llm_chain.invoke({"content": chunk}).content
+            result = llm_chain.invoke({"content": chunk}).content.strip()
             processed_summaries.append(result)
 
-        final_summary = " ".join(processed_summaries)
-        return final_summary
+        return " ".join(processed_summaries)
 
-    def execute_toolkit(self, initial_query, num_results):
+    def execute_toolkit(self, initial_query: str, num_results: int) -> str:
         refined_query = self.refine_search_query(initial_query)
         search_results = self.perform_google_search(refined_query, num_results)
         if not search_results:
             return "No search results found."
 
-        urls = [link for _, link, _ in search_results]
-        fetched_content = []
-
-        # Using ThreadPoolExecutor to fetch content concurrently
-        with ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_url = {executor.submit(self.fetch_web_content, url): url for url in urls}
-            for future in as_completed(future_to_url):
-                url = future_to_url[future]
-                try:
-                    content = future.result()
-                    if content:
-                        fetched_content.append(content)
-                except Exception:
-                    continue
+        fetched_content = self.fetch_content_concurrently([link for _, link, _ in search_results])
 
         if fetched_content:
             final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
@@ -97,6 +92,19 @@ class LiveWebToolkit:
                 return final_summary
         return "Failed to get a valid response."
 
-def web_summary(api_key, initial_query, num_results, prompts_file=None):
+    def fetch_content_concurrently(self, urls: List[str], max_workers: int = 5) -> List[str]:
+        fetched_content = []
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_url = {executor.submit(self.fetch_web_content, url): url for url in urls}
+            for future in as_completed(future_to_url):
+                try:
+                    content = future.result()
+                    if content:
+                        fetched_content.append(content)
+                except Exception:
+                    continue
+        return fetched_content
+
+def web_summary(api_key: str, initial_query: str, num_results: int, prompts_file: Optional[str] = None) -> str:
     toolkit = LiveWebToolkit(api_key, prompts_file)
     return toolkit.execute_toolkit(initial_query, num_results)
