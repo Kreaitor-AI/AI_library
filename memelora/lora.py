@@ -7,7 +7,7 @@ class ImageGenerator:
         # Set the FAL_KEY environment variable with the API key
         os.environ["FAL_KEY"] = fal_key
 
-    def generate_image(self, prompt, lora_path, together_api_key, model_endpoint="fal-ai/flux-lora"):
+    def generate_image(self, prompt, lora_path, together_api_key, model_endpoint):
         # Generate the final prompt using llama3
         llama_prompt = llama3(prompt=prompt, api_key=together_api_key)
 
@@ -20,7 +20,7 @@ class ImageGenerator:
                     {
                         "path": lora_path
                     }
-                ] if model_endpoint == "fal-ai/flux-lora" else None,  # Only add LoRA weights for the LoRA endpoint
+                ],
                 "num_images": 1,
                 "image_size": "square_hd",
                 "num_inference_steps": 28
@@ -40,7 +40,7 @@ def lora(fal_key, lora_path, prompt, together_api_key, model_endpoint="fal-ai/fl
     Public function to generate an image using either LoRA or General models.
     
     :param fal_key: The FAL API key for authentication.
-    :param lora_path: The path to the LoRA model weights.
+    :param lora_path: The path to the LoRA model weights (required for all models).
     :param prompt: The user input or description for the image.
     :param together_api_key: The API key for the llama3 model to generate the prompt.
     :param model_endpoint: The model endpoint to use ('fal-ai/flux-lora' or 'fal-ai/flux-general').
