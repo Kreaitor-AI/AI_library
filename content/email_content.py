@@ -1,4 +1,4 @@
-EmailContent = {
+email_content = {
     "Announcement": {
         "subject_line": "Create a formal subject line announcing exciting news or updates.",
         "body": "Compose a formal email announcing the latest updates or news, ensuring the tone is professional and the content is clear and informative."
