@@ -1,4 +1,5 @@
 import os
+import tempfile
 import yaml
 from elevenlabs.client import ElevenLabs
 from elevenlabs import Voice, VoiceSettings
@@ -79,10 +80,18 @@ class CloneAudioTools:
         Returns:
             Voice: The cloned voice object.
         """
-        if os.path.isfile(file_path_or_bytes):
+        if isinstance(file_path_or_bytes, bytes):
+            # Save bytes to a temporary file
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                temp_file.write(file_path_or_bytes)
+                temp_file_path = temp_file.name
+
+            voice = self.client.clone(name=name, description=description, files=[temp_file_path])
+            os.remove(temp_file_path)  # Clean up the temporary file
+        elif os.path.isfile(file_path_or_bytes):
             voice = self.client.clone(name=name, description=description, files=[file_path_or_bytes])
         else:
-            voice = self.client.clone(name=name, description=description, files=[file_path_or_bytes])
+            raise ValueError("Invalid file path or bytes.")
         return voice
 
 def clone_audio(openai_api_key: str, elevenlabs_api_key: str, text: str, file_path_or_bytes: str, emotion: str = None,
