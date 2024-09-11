@@ -27,22 +27,23 @@ class AudioTools:
             self.prompts = yaml.safe_load(file)
         self.voice_dict = self.prompts['Voice']
 
-    def generate_prompt(self, text: str, emotion: str) -> str:
+    def generate_prompt(self, text: str, emotion: str = None) -> str:
         """
-        Generate a modified text prompt based on emotion.
+        Generate a modified text prompt based on emotion, if provided.
 
         Args:
             text (str): The input text.
-            emotion (str): The emotion to apply to the text.
+            emotion (str, optional): The emotion to apply to the text. If None, return the text unchanged.
 
         Returns:
-            str: The modified text with the applied emotion.
+            str: The modified text with the applied emotion, or original text if no emotion is provided.
         """
-        template = self.prompts['modify_text_with_emotion']
-        prompt = PromptTemplate(template=template, input_variables=["text", "emotion"])
-        result = prompt | self.llm
-        modified_text = result.invoke({"text": text, "emotion": emotion}).content.strip()
-        return modified_text
+        if emotion:
+            template = self.prompts['modify_text_with_emotion']
+            prompt = PromptTemplate(template=template, input_variables=["text", "emotion"])
+            result = prompt | self.llm
+            return result.invoke({"text": text, "emotion": emotion}).content.strip()
+        return text
 
     def generate_tts(self, text: str, voice_name: str = 'Rachel', stability: float = 0.5,
                      similarity_boost: float = 0.5, style: float = 0.5, use_speaker_boost: bool = True) -> bytes:
@@ -72,18 +73,18 @@ class AudioTools:
         audio = b''.join(audio_generator)
         return audio
 
-def generate_audio(openai_api_key: str, elevenlabs_api_key: str, text: str, emotion: str, 
+def generate_audio(openai_api_key: str, elevenlabs_api_key: str, text: str, emotion: str = None, 
                    voice_name: str = 'Rachel', stability: float = 0.5, 
                    similarity_boost: float = 0.5, style: float = 0.5, 
                    use_speaker_boost: bool = True, prompts_file: str = None) -> bytes:
     """
-    Generate audio from text with emotion and specified voice settings.
+    Generate audio from text with optional emotion and specified voice settings.
 
     Args:
         openai_api_key (str): API key for OpenAI.
         elevenlabs_api_key (str): API key for ElevenLabs.
         text (str): The text to convert to speech.
-        emotion (str): The emotion to apply to the text.
+        emotion (str, optional): The emotion to apply to the text. If None, no emotion is applied.
         voice_name (str, optional): The name of the voice to use. Defaults to 'Rachel'.
         stability (float, optional): Stability setting for the voice. Defaults to 0.5.
         similarity_boost (float, optional): Similarity boost setting. Defaults to 0.5.
