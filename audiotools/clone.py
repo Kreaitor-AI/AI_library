@@ -1,4 +1,5 @@
 import os
+import yaml
 from elevenlabs.client import ElevenLabs
 from elevenlabs import Voice, VoiceSettings
 from langchain import PromptTemplate
