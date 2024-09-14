@@ -13,18 +13,23 @@ class GPT4ominiClient:
         """
         self.api_key = api_key
 
-    def chat_completion(self, prompt: str, stream: bool = False) -> Optional[str]:
+    def chat_completion(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
         """
         Generate a chat completion using the GPT-4o-mini model.
 
         Args:
             prompt (str): The prompt to send to the model.
             stream (bool): Whether to stream the output. Defaults to False.
+            language (Optional[str]): The language for the response. Defaults to "English".
 
         Returns:
             Optional[str]: The model's response if streaming is disabled, otherwise None.
         """
-        prompt_template = PromptTemplate(template="{prompt}", input_variables=["prompt"])
+        # Modified template to include the language parameter
+        prompt_template = PromptTemplate(
+            template="Please respond entirely in {language}. Here is the prompt: {prompt}",
+            input_variables=["prompt", "language"]
+        )
         callbacks = [StreamingStdOutCallbackHandler()] if stream else None
 
         llm = ChatOpenAI(
@@ -35,12 +40,12 @@ class GPT4ominiClient:
         )
 
         result = prompt_template | llm
-        response = result.invoke({"prompt": prompt})
+        response = result.invoke({"prompt": prompt, "language": language})
 
         if not stream:
             return response.content.strip()
 
-def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False) -> Optional[str]:
+def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
     """
     Convenience function to generate chat completion with GPT-4o-mini.
 
@@ -48,9 +53,10 @@ def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False) 
         prompt (str): The prompt to send to the model.
         api_key (Optional[str]): The API key for OpenAI. Defaults to None.
         stream (bool): Whether to stream the output. Defaults to False.
+        language (Optional[str]): The language for the response. Defaults to "English".
 
     Returns:
         Optional[str]: The model's response if streaming is disabled, otherwise None.
     """
     client = GPT4ominiClient(api_key)
-    return client.chat_completion(prompt, stream)
+    return client.chat_completion(prompt, stream, language)
