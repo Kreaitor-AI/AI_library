@@ -4,3 +4,4 @@ from .article_format import article_format
 from .template_blog import template_blog
 from .grammar_correction import grammar_correction
 from .email_prompt import email_prompt
+from .explain_like_five import explain_like_five
