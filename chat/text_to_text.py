@@ -21,23 +21,24 @@ class TextToTextProcessor:
         """
         return ''.join(chunk for chunk in stream_response)
 
-    def process(self, prompt: str, stream: bool = False) -> Union[str, None]:
+    def process(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Union[str, None]:
         """
-        Process the input prompt using the specified model, with optional streaming.
+        Process the input prompt using the specified model, with optional streaming and language support.
 
         Args:
             prompt (str): The prompt to be processed by the model.
             stream (bool): If True, the response will be streamed. Defaults to False.
+            language (Optional[str]): The language for the response. Defaults to "English".
         
         Returns:
             Union[str, None]: The processed response as a string. If stream is True, the full response after streaming.
         """
         if self.model == "gpt-3.5-turbo":
-            response = gpt3_5(prompt, api_key=self.api_key, stream=stream)
+            response = gpt3_5(prompt, api_key=self.api_key, stream=stream, language=language)
         elif self.model == "gpt-4o-mini":
-            response = gpt4omini(prompt, api_key=self.api_key, stream=stream)
+            response = gpt4omini(prompt, api_key=self.api_key, stream=stream, language=language)
         elif self.model == "llama3":
-            response = llama3(prompt, api_key=self.api_key, stream=stream)
+            response = llama3(prompt, api_key=self.api_key, stream=stream, language=language)
         else:
             raise ValueError(f"Unsupported model: {self.model}")
 
@@ -46,7 +47,7 @@ class TextToTextProcessor:
             return self._handle_streaming_response(response)
         return response
 
-    def concat(self, next_model: str, next_api_key: str, next_prompt: str, stream: bool = False) -> Union[str, None]:
+    def concat(self, next_model: str, next_api_key: str, next_prompt: str, stream: bool = False, language: Optional[str] = "English") -> Union[str, None]:
         """
         Concatenate another model's response with the current context and generate a response.
         
@@ -55,6 +56,7 @@ class TextToTextProcessor:
             next_api_key (str): API key for the next model.
             next_prompt (str): Prompt for the next model.
             stream (bool): If True, the response will be streamed. Defaults to False.
+            language (Optional[str]): The language for the response. Defaults to "English".
         
         Returns:
             Union[str, None]: The processed response from the next model.
@@ -62,7 +64,7 @@ class TextToTextProcessor:
         # Create a new processor for the next model
         next_processor = TextToTextProcessor(next_model, next_api_key)
         # Process the next prompt with the new model
-        return next_processor.process(next_prompt, stream)
+        return next_processor.process(next_prompt, stream, language)
 
 def text_to_text(model: str, api_key: str) -> TextToTextProcessor:
     """
