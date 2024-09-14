@@ -26,7 +26,7 @@ class GPT3_5TurboClient:
             Optional[str]: The model's response if streaming is disabled, otherwise None.
         """
         prompt_template = PromptTemplate(
-            template="Respond in {language}: {prompt}",
+            template="Please respond strictly in {language} without using other languages: {prompt}",
             input_variables=["prompt", "language"]
         )
         callbacks = [StreamingStdOutCallbackHandler()] if stream else None
