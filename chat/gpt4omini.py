@@ -43,7 +43,7 @@ class GPT4ominiClient:
         response = result.invoke({"prompt": prompt, "language": language})
 
         if not stream:
-            return response.content.strip()
+            return response
 
 def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
     """
