@@ -6,3 +6,4 @@ from .grammar_correction import grammar_correction
 from .email_prompt import email_prompt
 from .explain_like_five import explain_like_five
 from .grammar_suggestion import grammar_suggestion
+from .image_prompts import image_prompts
