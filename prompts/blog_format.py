@@ -15,12 +15,12 @@ Format the following blog content {summary} using below instructions:
     - * for unordered list items
     - 1. for ordered list items
 
-2. Provide relevant detailed prompts for each image. Insert images at appropriate places/sections in the blog using FORMAT: [Image i: image prompt], where i is the img_number.
+2. Provide relevant detailed prompts for each image. Insert images at appropriate places/sections in the blog using FORMAT: {{ImagePromptForBlog: image prompt}}.
 3. Do not include any other tags.
 
 Special Instructions:
-Strictly adhere to [Image i: image prompt]
-Total number of images to be used: {img_number}
+Strictly adhere to 
+Total number of images to be used: {{ImagePromptForBlog: image prompt}}
 Each image on a new line only, and no two images together one below another.
 
 Format the content accordingly. Don't start with 'Here is the formatted blog content:'. Directly start with the blog.
