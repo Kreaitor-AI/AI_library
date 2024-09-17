@@ -20,7 +20,7 @@ Format the following blog content {summary} using below instructions:
 
 Special Instructions:
 Strictly adhere to 
-Total number of images to be used: {{ImagePromptForBlog: image prompt}}
+Total number of images to be used: {{ImagePromptForBlog: image prompt}}. make sure to put {{}}.
 Each image on a new line only, and no two images together one below another.
 
 Format the content accordingly. Don't start with 'Here is the formatted blog content:'. Directly start with the blog.
