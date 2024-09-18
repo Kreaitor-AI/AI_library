@@ -1,3 +1,4 @@
+import asyncio
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -13,9 +14,9 @@ class GPT3_5TurboClient:
         """
         self.api_key = api_key
 
-    def chat_completion(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
+    async def chat_completion(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
         """
-        Generate a chat completion using the GPT-3.5-turbo model.
+        Generate a chat completion using the GPT-3.5-turbo model asynchronously.
 
         Args:
             prompt (str): The prompt to send to the model.
@@ -32,21 +33,23 @@ class GPT3_5TurboClient:
         callbacks = [StreamingStdOutCallbackHandler()] if stream else None
 
         llm = ChatOpenAI(
-            openai_api_key=self.api_key, 
+            openai_api_key=self.api_key,
             model="gpt-3.5-turbo",
             streaming=stream,
             callbacks=callbacks
         )
 
         result = prompt_template | llm
-        response = result.invoke({"prompt": prompt, "language": language})
+
+        # Asynchronous call to invoke the model
+        response = await result.ainvoke({"prompt": prompt, "language": language})
 
         if not stream:
             return response.content.strip()
 
-def gpt3_5(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
+async def gpt3_5(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
     """
-    Convenience function to generate chat completion with GPT-3.5-turbo.
+    Asynchronous function to generate chat completion with GPT-3.5-turbo.
 
     Args:
         prompt (str): The prompt to send to the model.
@@ -58,4 +61,4 @@ def gpt3_5(prompt: str, api_key: Optional[str] = None, stream: bool = False, lan
         Optional[str]: The model's response if streaming is disabled, otherwise None.
     """
     client = GPT3_5TurboClient(api_key)
-    return client.chat_completion(prompt, stream, language)
+    return await client.chat_completion(prompt, stream, language)
