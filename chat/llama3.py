@@ -15,17 +15,23 @@ class Llama3Client:
             raise ValueError("API key is required for Together API.")
         self.client = Together(api_key=self.api_key)
 
-    def get_response(self, prompt: str, stream: bool = False) -> Optional[str]:
+    def get_response(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
         """
-        Generate a response using the Llama-3 model.
+        Generate a response using the Llama-3 model with optional language support.
 
         Args:
             prompt (str): The prompt to send to the model.
             stream (bool): Whether to stream the output. Defaults to False.
+            language (Optional[str]): The language for the response. Defaults to "English".
 
         Returns:
             Optional[str]: The model's response if streaming is disabled, otherwise the collected stream.
         """
+        # Adjust the prompt for the specified language if needed
+        # (Assuming Llama-3 supports language parameter or prompt adjustment)
+        if language and language != "English":
+            prompt = f"Please respond in {language}: {prompt}"
+
         if stream:
             # Streaming mode
             try:
@@ -59,17 +65,18 @@ class Llama3Client:
                 print(f"Error occurred during non-streaming response: {e}")
                 return None
 
-def llama3(prompt: str, api_key: Optional[str] = None, stream: bool = False) -> Optional[str]:
+def llama3(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
     """
-    Convenience function to generate a response using the Llama-3 model.
+    Convenience function to generate a response using the Llama-3 model with optional language support.
 
     Args:
         prompt (str): The prompt to send to the model.
         api_key (Optional[str]): The API key for Together API. Defaults to None.
         stream (bool): Whether to stream the output. Defaults to False.
+        language (Optional[str]): The language for the response. Defaults to "English".
 
     Returns:
         Optional[str]: The model's response if streaming is disabled, or the collected stream if enabled.
     """
     client = Llama3Client(api_key)
-    return client.get_response(prompt, stream)
+    return client.get_response(prompt, stream, language)
