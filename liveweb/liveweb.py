@@ -1,80 +1,110 @@
-from typing import Optional, Union, Generator
+import requests
+from bs4 import BeautifulSoup
+from langchain import PromptTemplate
+from langchain_openai import ChatOpenAI
+import yaml
+import pkg_resources
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Tuple, Optional
 
-from .gpt3_5 import gpt3_5
-from .gpt4omini import gpt4omini
-from .llama3 import llama3
-
-class TextToTextProcessor:
-    def __init__(self, model: str, api_key: str):
-        self.model = model
+class LiveWebToolkit:
+    def __init__(self, api_key: str, prompts_file: Optional[str] = None):
         self.api_key = api_key
+        self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
+        self.prompts = self.load_prompts(prompts_file)
 
-    def _handle_streaming_response(self, stream_response: Generator[str, None, None]) -> str:
-        """
-        Collect and return the entire streamed response as a single string.
-        
-        Args:
-            stream_response (Generator[str, None, None]): The response generator when stream is True.
-        
-        Returns:
-            str: The complete concatenated response.
-        """
-        return ''.join(chunk for chunk in stream_response)
+    def load_prompts(self, prompts_file: Optional[str]) -> dict:
+        if prompts_file is None:
+            prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
+        with open(prompts_file, 'r') as file:
+            return yaml.safe_load(file)
 
-    def process(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Union[str, None]:
-        """
-        Process the input prompt using the specified model, with optional streaming and language support.
+    def refine_search_query(self, query: str) -> str:
+        template = self.prompts['refine_search_query']
+        prompt = PromptTemplate(template=template, input_variables=["query"])
+        result = prompt | self.llm
+        return result.invoke({"query": query}).content.strip()
 
-        Args:
-            prompt (str): The prompt to be processed by the model.
-            stream (bool): If True, the response will be streamed. Defaults to False.
-            language (Optional[str]): The language for the response. Defaults to "English".
-        
-        Returns:
-            Union[str, None]: The processed response as a string. If stream is True, the full response after streaming.
-        """
-        if self.model == "gpt-3.5-turbo":
-            response = gpt3_5(prompt, api_key=self.api_key, stream=stream, language=language)
-        elif self.model == "gpt-4o-mini":
-            response = gpt4omini(prompt, api_key=self.api_key, stream=stream, language=language)
-        elif self.model == "llama3":
-            response = llama3(prompt, api_key=self.api_key, stream=stream, language=language)
-        else:
-            raise ValueError(f"Unsupported model: {self.model}")
+    def perform_google_search(self, query: str, num_results: int = 10) -> List[Tuple[str, str, str]]:
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            )
+        }
+        search_url = f"https://www.google.com/search?q={query}&num={num_results}"
+        try:
+            response = requests.get(search_url, headers=headers, timeout=10)
+            response.raise_for_status()
+        except requests.RequestException:
+            return []
 
-        # Handle streaming if enabled
-        if stream and isinstance(response, Generator):
-            return self._handle_streaming_response(response)
-        return response
+        soup = BeautifulSoup(response.text, "html.parser")
+        return self.parse_google_results(soup)
 
-    def concat(self, next_model: str, next_api_key: str, next_prompt: str, stream: bool = False, language: Optional[str] = "English") -> Union[str, None]:
-        """
-        Concatenate another model's response with the current context and generate a response.
-        
-        Args:
-            next_model (str): The next model to use.
-            next_api_key (str): API key for the next model.
-            next_prompt (str): Prompt for the next model.
-            stream (bool): If True, the response will be streamed. Defaults to False.
-            language (Optional[str]): The language for the response. Defaults to "English".
-        
-        Returns:
-            Union[str, None]: The processed response from the next model.
-        """
-        # Create a new processor for the next model
-        next_processor = TextToTextProcessor(next_model, next_api_key)
-        # Process the next prompt with the new model
-        return next_processor.process(next_prompt, stream, language)
+    def parse_google_results(self, soup: BeautifulSoup) -> List[Tuple[str, str, str]]:
+        results = []
+        for item in soup.find_all('div', class_='tF2Cxc'):
+            title = item.find('h3').text if item.find('h3') else 'No title'
+            link = item.find('a')['href'] if item.find('a') else 'No link'
+            snippet = item.find('span', class_='aCOpRe').text if item.find('span', 'aCOpRe') else 'No snippet'
+            results.append((title, link, snippet))
+        return results
 
-def text_to_text(model: str, api_key: str) -> TextToTextProcessor:
-    """
-    Factory function to initialize a TextToTextProcessor.
-    
-    Args:
-        model (str): The model to be used (e.g., "gpt-3.5-turbo", "llama3").
-        api_key (str): The API key for the chosen model.
-    
-    Returns:
-        TextToTextProcessor: An initialized processor for the given model.
-    """
-    return TextToTextProcessor(model, api_key)
+    def fetch_web_content(self, url: str) -> Optional[str]:
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            if response.status_code == 403:
+                return None
+            soup = BeautifulSoup(response.content, 'html.parser')
+            paragraphs = soup.find_all('p')
+            return "\n".join(para.get_text() for para in paragraphs)
+        except (requests.RequestException, Exception):
+            return None
+
+    def process_web_content_with_llm(self, contents: str) -> str:
+        template = self.prompts['summarize_content']
+        prompt = PromptTemplate(template=template, input_variables=["content"])
+        llm_chain = prompt | self.llm
+
+        processed_summaries = []
+        max_chunk_length = 16000  # Max tokens for the model
+        content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
+
+        for chunk in content_chunks:
+            result = llm_chain.invoke({"content": chunk}).content.strip()
+            processed_summaries.append(result)
+
+        return " ".join(processed_summaries)
+
+    def execute_toolkit(self, initial_query: str, num_results: int) -> str:
+        refined_query = self.refine_search_query(initial_query)
+        search_results = self.perform_google_search(refined_query, num_results)
+        if not search_results:
+            return "No search results found."
+
+        fetched_content = self.fetch_content_concurrently([link for _, link, _ in search_results])
+
+        if fetched_content:
+            final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
+            if final_summary.strip():
+                return final_summary
+        return "Failed to get a valid response."
+
+    def fetch_content_concurrently(self, urls: List[str], max_workers: int = 5) -> List[str]:
+        fetched_content = []
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_url = {executor.submit(self.fetch_web_content, url): url for url in urls}
+            for future in as_completed(future_to_url):
+                try:
+                    content = future.result()
+                    if content:
+                        fetched_content.append(content)
+                except Exception:
+                    continue
+        return fetched_content
+
+def web_summary(api_key: str, initial_query: str, num_results: int, prompts_file: Optional[str] = None) -> str:
+    toolkit = LiveWebToolkit(api_key, prompts_file)
+    return toolkit.execute_toolkit(initial_query, num_results)
