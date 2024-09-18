@@ -1,3 +1,4 @@
+import asyncio
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -13,9 +14,9 @@ class GPT4ominiClient:
         """
         self.api_key = api_key
 
-    def chat_completion(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
+    async def chat_completion(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
         """
-        Generate a chat completion using the GPT-4o-mini model.
+        Generate a chat completion using the GPT-4o-mini model asynchronously.
 
         Args:
             prompt (str): The prompt to send to the model.
@@ -40,14 +41,16 @@ class GPT4ominiClient:
         )
 
         result = prompt_template | llm
-        response = result.invoke({"prompt": prompt, "language": language})
+
+        # Asynchronous call to invoke the model
+        response = await result.ainvoke({"prompt": prompt, "language": language})
 
         if not stream:
             return response.content.strip()
 
-def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
+async def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
     """
-    Convenience function to generate chat completion with GPT-4o-mini.
+    Asynchronous function to generate chat completion with GPT-4o-mini.
 
     Args:
         prompt (str): The prompt to send to the model.
@@ -59,4 +62,4 @@ def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False, 
         Optional[str]: The model's response if streaming is disabled, otherwise None.
     """
     client = GPT4ominiClient(api_key)
-    return client.chat_completion(prompt, stream, language)
+    return await client.chat_completion(prompt, stream, language)
