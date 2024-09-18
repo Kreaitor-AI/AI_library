@@ -45,7 +45,7 @@ class GPT4ominiClient:
         if not stream:
             return response.content.strip()
 
-def gpt4o(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
+def gpt4omini(prompt: str, api_key: Optional[str] = None, stream: bool = False, language: Optional[str] = "English") -> Optional[str]:
     """
     Convenience function to generate chat completion with GPT-4o-mini.
 
