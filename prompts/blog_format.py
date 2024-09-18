@@ -19,8 +19,8 @@ Format the following blog content {summary} using below instructions:
 3. Do not include any other tags.
 
 Special Instructions:
-Strictly adhere to 
-Total number of images to be used: {{&ImagePromptForBlog: image prompt&}}.
+Strictly adhere to : {{&ImagePromptForBlog: image prompt&}}.
+Total number of images to be used: {img_number}.
 Each image on a new line only, and no two images together one below another.
 
 Format the content accordingly. Don't start with 'Here is the formatted blog content:'. Directly start with the blog.
