@@ -8,14 +8,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Tuple, Optional
 
 class LiveWebToolkit:
-    def _init_(self, api_key: str, prompts_file: Optional[str] = None):
+    def __init__(self, api_key: str, prompts_file: Optional[str] = None):
         self.api_key = api_key
         self.llm = ChatOpenAI(openai_api_key=api_key, model="gpt-3.5-turbo")
         self.prompts = self.load_prompts(prompts_file)
 
     def load_prompts(self, prompts_file: Optional[str]) -> dict:
         if prompts_file is None:
-            prompts_file = pkg_resources.resource_filename(_name_, 'prompts.yaml')
+            prompts_file = pkg_resources.resource_filename(__name__, 'prompts.yaml')
         with open(prompts_file, 'r') as file:
             return yaml.safe_load(file)
 
@@ -63,17 +63,17 @@ class LiveWebToolkit:
         except (requests.RequestException, Exception):
             return None
 
-    def process_web_content_with_llm(self, query: str, contents: str) -> str:
+    def process_web_content_with_llm(self, contents: str) -> str:
         template = self.prompts['summarize_content']
-        prompt = PromptTemplate(template=template, input_variables=["content", "query"])
+        prompt = PromptTemplate(template=template, input_variables=["content"])
         llm_chain = prompt | self.llm
 
         processed_summaries = []
-        max_chunk_length = 16000
+        max_chunk_length = 16000  # Max tokens for the model
         content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
 
         for chunk in content_chunks:
-            result = llm_chain.invoke({"content": chunk, "query": query}).content.strip()
+            result = llm_chain.invoke({"content": chunk}).content.strip()
             processed_summaries.append(result)
 
         return " ".join(processed_summaries)
@@ -87,7 +87,7 @@ class LiveWebToolkit:
         fetched_content = self.fetch_content_concurrently([link for _, link, _ in search_results])
 
         if fetched_content:
-            final_summary = self.process_web_content_with_llm(initial_query, " ".join(fetched_content))
+            final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
             if final_summary.strip():
                 return final_summary
         return "Failed to get a valid response."
@@ -107,4 +107,4 @@ class LiveWebToolkit:
 
 def web_summary(api_key: str, initial_query: str, num_results: int, prompts_file: Optional[str] = None) -> str:
     toolkit = LiveWebToolkit(api_key, prompts_file)
-    return toolkit.execute_toolkit(initial_query, num_results)
+    return toolkit.execute_toolkit(initial_query, num_results)
