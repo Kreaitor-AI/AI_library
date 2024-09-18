@@ -1,6 +1,7 @@
 from typing import Optional, Union, Generator
+
 from .gpt3_5 import gpt3_5
-from .gpt4omini import non_stream_gpt4omini, stream_gpt4omini
+from .gpt4o import gpt4o
 from .llama3 import llama3
 
 class TextToTextProcessor:
@@ -35,10 +36,7 @@ class TextToTextProcessor:
         if self.model == "gpt-3.5-turbo":
             response = gpt3_5(prompt, api_key=self.api_key, stream=stream, language=language)
         elif self.model == "gpt-4o-mini":
-            if stream:
-                response = stream_gpt4omini(prompt, api_key=self.api_key, language=language)
-            else:
-                response = non_stream_gpt4omini(prompt, api_key=self.api_key, language=language)
+            response = gpt4o(prompt, api_key=self.api_key, stream=stream, language=language)
         elif self.model == "llama3":
             response = llama3(prompt, api_key=self.api_key, stream=stream, language=language)
         else:
