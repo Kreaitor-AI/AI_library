@@ -63,9 +63,13 @@ class LiveWebToolkit:
         except (requests.RequestException, Exception):
             return None
 
-    def process_web_content_with_llm(self, contents: str) -> str:
-        template = self.prompts['summarize_content']
-        prompt = PromptTemplate(template=template, input_variables=["content"])
+    def process_web_content_with_llm(self, contents: str, query: str) -> str:
+        template = """Summarize the following content accurately and comprehensively based on the query. Ensure that no key points are omitted, and all important details are included. The summary should reflect the full scope of the content:
+        Query: {query}
+        Content: {content}
+        """
+
+        prompt = PromptTemplate(template=template, input_variables=["content", "query"])
         llm_chain = prompt | self.llm
 
         processed_summaries = []
@@ -73,7 +77,7 @@ class LiveWebToolkit:
         content_chunks = [contents[i:i + max_chunk_length] for i in range(0, len(contents), max_chunk_length)]
 
         for chunk in content_chunks:
-            result = llm_chain.invoke({"content": chunk}).content.strip()
+            result = llm_chain.invoke({"content": chunk, "query": query}).content.strip()
             processed_summaries.append(result)
 
         return " ".join(processed_summaries)
@@ -87,7 +91,7 @@ class LiveWebToolkit:
         fetched_content = self.fetch_content_concurrently([link for _, link, _ in search_results])
 
         if fetched_content:
-            final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
+            final_summary = self.process_web_content_with_llm(" ".join(fetched_content), refined_query)
             if final_summary.strip():
                 return final_summary
         return "Failed to get a valid response."
