@@ -3,5 +3,5 @@ refine_search_query: |
   Initial Query: {query}
 
 summarize_content: |
-  Summarize the following content:
-  content:{content}
+  Given the following query: {query}, summarize the content below:
+  Content: {content}
