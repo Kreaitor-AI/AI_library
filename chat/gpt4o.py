@@ -22,7 +22,10 @@ class GPT4ominiClient:
         Returns:
             AsyncIterator[str]: An iterator yielding the tokens as they are received.
         """
-        prompt_template = PromptTemplate(template="{prompt}", input_variables=["prompt","language"])
+        prompt_template = PromptTemplate(
+            template="Respond to the following prompt in {language}:\n\n{prompt}",
+            input_variables=["prompt", "language"]
+        )
         callback = AsyncIteratorCallbackHandler()
 
         llm = ChatOpenAI(
