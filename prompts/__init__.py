@@ -9,3 +9,4 @@ from .grammar_suggestion import grammar_suggestion
 from .image_prompts import image_prompts
 from .text_continue_prompt import text_continue_prompt
 from .text_shortner_prompt import text_shortner_prompt
+from .text_maximize_prompt import text_maximize_prompt
