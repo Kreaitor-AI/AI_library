@@ -2,6 +2,7 @@ import os
 import pickle
 from io import BytesIO
 import pandas as pd
+import boto3
 from langchain.document_loaders import (
     PyPDFLoader, UnstructuredWordDocumentLoader, UnstructuredFileLoader,
     UnstructuredExcelLoader, UnstructuredCSVLoader
@@ -33,53 +34,43 @@ class ChatWithDoc:
             memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
         return memory
 
-    def load_documents(self, file_path: str, file_extension: str):
-        ext = file_extension.lower()
+    def load_documents(self, file_stream):
         documents = []
 
-        if ext == ".pdf":
-            loader = PyPDFLoader(file_path)
+        if file_stream.name.endswith(".pdf"):
+            loader = PyPDFLoader(file_stream)
             documents = loader.load()
-        elif ext == ".docx":
-            loader = UnstructuredWordDocumentLoader(file_path)
+        elif file_stream.name.endswith(".docx"):
+            loader = UnstructuredWordDocumentLoader(file_stream)
             documents = loader.load()
-        elif ext in [".txt", ".md"]:
-            loader = UnstructuredFileLoader(file_path)
+        elif file_stream.name.endswith((".txt", ".md")):
+            loader = UnstructuredFileLoader(file_stream)
             documents = loader.load()
-        elif ext == ".xlsx":
-            xlsx_file = pd.ExcelFile(file_path)
+        elif file_stream.name.endswith(".xlsx"):
+            xlsx_file = pd.ExcelFile(file_stream)
             for sheet in xlsx_file.sheet_names:
                 df = pd.read_excel(xlsx_file, sheet_name=sheet)
                 text = df.to_string()
                 documents.append(Document(page_content=text))
-        elif ext == ".csv":
-            csv_data = pd.read_csv(file_path)
+        elif file_stream.name.endswith(".csv"):
+            csv_data = pd.read_csv(file_stream)
             text = csv_data.to_string()
             documents.append(Document(page_content=text))
         else:
-            raise ValueError(f"Unsupported file type: {ext}")
+            raise ValueError("Unsupported file type.")
 
         return documents
 
-    def update_faiss_index(self, file_path: str, file_extension: str):
+    def update_faiss_index(self, file_stream):
         user_folder = f"faiss_index_{self.user_id}"
         embeddings = OpenAIEmbeddings(api_key=self.api_key)
 
         if os.path.exists(user_folder):
-            vectorstore = FAISS.load_local(
-                user_folder,
-                embeddings,
-                allow_dangerous_deserialization=True
-            )
+            vectorstore = FAISS.load_local(user_folder, embeddings, allow_dangerous_deserialization=True)
         else:
             vectorstore = None
 
-        docs = self.load_documents(file_path, file_extension)
-
-        # Check if documents are loaded
-        if not docs:
-            raise ValueError("No documents were loaded. Please check the file path and format.")
-
+        docs = self.load_documents(file_stream)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
@@ -100,21 +91,31 @@ class ChatWithDoc:
 
         return qa_chain
 
-def loaddoc(file_path: str, file_extension: str, api_key: str, user_id: str) -> ConversationalRetrievalChain:
+def loaddoc(file_url: str, aws_access_key: str, aws_secret_key: str, bucket_name: str, api_key: str, user_id: str) -> ConversationalRetrievalChain:
     """
-    Load documents and update the FAISS index.
+    Load documents from S3 and update the FAISS index.
     
     Args:
-        file_path (str): The path to the document file.
-        file_extension (str): The extension of the document file.
+        file_url (str): The URL of the file in the S3 bucket.
+        aws_access_key (str): AWS access key.
+        aws_secret_key (str): AWS secret key.
+        bucket_name (str): S3 bucket name.
         api_key (str): API key for the OpenAI model.
         user_id (str): Unique user identifier.
         
     Returns:
         ConversationalRetrievalChain: The QA chain for the loaded documents.
     """
+    # Create S3 client
+    s3 = boto3.client('s3', aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_key)
+    
+    # Download the file
+    file_stream = BytesIO()
+    s3.download_fileobj(bucket_name, file_url, file_stream)
+    file_stream.seek(0)  # Reset stream position to the beginning
+    
     chat_doc = ChatWithDoc(api_key, user_id)
-    return chat_doc.update_faiss_index(file_path, file_extension)
+    return chat_doc.update_faiss_index(file_stream)
 
 def chatwithdoc(query: str, qa_chain: ConversationalRetrievalChain, api_key: str, user_id: str) -> str:
     """
