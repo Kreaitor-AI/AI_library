@@ -1,5 +1,6 @@
 import os
 import pickle
+from io import BytesIO
 import pandas as pd
 from langchain.document_loaders import (
     PyPDFLoader, UnstructuredWordDocumentLoader, UnstructuredFileLoader,
@@ -74,6 +75,11 @@ class ChatWithDoc:
             vectorstore = None
 
         docs = self.load_documents(file_path, file_extension)
+
+        # Check if documents are loaded
+        if not docs:
+            raise ValueError("No documents were loaded. Please check the file path and format.")
+
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
@@ -99,7 +105,7 @@ def loaddoc(file_path: str, file_extension: str, api_key: str, user_id: str) -> 
     Load documents and update the FAISS index.
     
     Args:
-        file_path (str): The path of the document file.
+        file_path (str): The path to the document file.
         file_extension (str): The extension of the document file.
         api_key (str): API key for the OpenAI model.
         user_id (str): Unique user identifier.
