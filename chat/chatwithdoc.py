@@ -1,5 +1,6 @@
 import os
 import pickle
+import tempfile
 from io import BytesIO
 import pandas as pd
 from langchain.document_loaders import (
@@ -33,28 +34,27 @@ class ChatWithDoc:
             memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
         return memory
 
-    def load_documents(self, file_bytes, file_extension):
-        file_stream = BytesIO(file_bytes)
+    def load_documents(self, file_path, file_extension):
         ext = file_extension.lower()
         documents = []
 
         if ext == ".pdf":
-            loader = PyPDFLoader(file_stream)
+            loader = PyPDFLoader(file_path)
             documents = loader.load()
         elif ext == ".docx":
-            loader = UnstructuredWordDocumentLoader(file_stream)
+            loader = UnstructuredWordDocumentLoader(file_path)
             documents = loader.load()
         elif ext in [".txt", ".md"]:
-            loader = UnstructuredFileLoader(file_stream)
+            loader = UnstructuredFileLoader(file_path)
             documents = loader.load()
         elif ext == ".xlsx":
-            xlsx_file = pd.ExcelFile(file_stream)
+            xlsx_file = pd.ExcelFile(file_path)
             for sheet in xlsx_file.sheet_names:
                 df = pd.read_excel(xlsx_file, sheet_name=sheet)
                 text = df.to_string()
                 documents.append(Document(page_content=text))
         elif ext == ".csv":
-            csv_data = pd.read_csv(file_stream)
+            csv_data = pd.read_csv(file_path)
             text = csv_data.to_string()
             documents.append(Document(page_content=text))
         else:
@@ -62,7 +62,7 @@ class ChatWithDoc:
 
         return documents
 
-    def update_faiss_index(self, file_bytes, file_extension):
+    def update_faiss_index(self, file_path, file_extension):
         user_folder = f"faiss_index_{self.user_id}"
         embeddings = OpenAIEmbeddings(api_key=self.api_key)
 
@@ -75,7 +75,7 @@ class ChatWithDoc:
         else:
             vectorstore = None
 
-        docs = self.load_documents(file_bytes, file_extension)
+        docs = self.load_documents(file_path, file_extension)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
@@ -109,8 +109,15 @@ def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) 
     Returns:
         ConversationalRetrievalChain: The QA chain for the loaded documents.
     """
+    # Create a temporary file to store the document content
+    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
+        temp_file.write(file_bytes)
+        temp_file_path = temp_file.name  # Get the path to the temporary file
+
     chat_doc = ChatWithDoc(api_key, user_id)
-    return chat_doc.update_faiss_index(file_bytes, file_extension)
+    qa_chain = chat_doc.update_faiss_index(temp_file_path, file_extension)
+
+    return qa_chain
 
 def chatwithdoc(query: str, qa_chain: ConversationalRetrievalChain, api_key: str, user_id: str) -> str:
     """
