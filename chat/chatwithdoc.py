@@ -13,7 +13,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document
 from langchain_openai import OpenAIEmbeddings
 from .gpt4omini import gpt4omini
-from typing import Optional
+from typing import List, Optional
 
 class DocumentManager:
     def _save_memory(self, memory: ConversationBufferMemory, user_id: str):
@@ -25,73 +25,63 @@ class DocumentManager:
         memory_path = f"{user_id}_memory.pkl"
         if os.path.exists(memory_path):
             with open(memory_path, "rb") as f:
-                memory = pickle.load(f)
-        else:
-            memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-        return memory
+                return pickle.load(f)
+        return ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
-    def _load_documents(self, file_bytes: bytes, file_extension: str) -> list[Document]:
+    def _load_documents(self, file_bytes: bytes, file_extension: str) -> List[Document]:
         file_stream = BytesIO(file_bytes)
         ext = file_extension.lower()
-
         documents = []
 
-        if ext == ".pdf":
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
-                temp_pdf.write(file_bytes)
-                temp_pdf_path = temp_pdf.name
-            loader = PyPDFLoader(temp_pdf_path)
-            documents = loader.load()
-            os.remove(temp_pdf_path)
-        elif ext == ".docx":
-            loader = UnstructuredWordDocumentLoader(file_stream)
-            documents = loader.load()
-        elif ext in [".txt", ".md"]:
-            loader = UnstructuredFileLoader(file_stream)
-            documents = loader.load()
-        elif ext == ".xlsx":
-            xlsx_file = pd.ExcelFile(file_stream)
-            for sheet in xlsx_file.sheet_names:
-                df = pd.read_excel(xlsx_file, sheet_name=sheet)
-                text = df.to_string()
+        try:
+            if ext == ".pdf":
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+                    temp_pdf.write(file_bytes)
+                    loader = PyPDFLoader(temp_pdf.name)
+                documents = loader.load()
+            elif ext == ".docx":
+                loader = UnstructuredWordDocumentLoader(file_stream)
+                documents = loader.load()
+            elif ext in [".txt", ".md"]:
+                loader = UnstructuredFileLoader(file_stream)
+                documents = loader.load()
+            elif ext == ".xlsx":
+                xlsx_file = pd.ExcelFile(file_stream)
+                for sheet in xlsx_file.sheet_names:
+                    df = pd.read_excel(xlsx_file, sheet_name=sheet)
+                    text = df.to_string(index=False)
+                    documents.append(Document(page_content=text))
+            elif ext == ".csv":
+                csv_data = pd.read_csv(file_stream)
+                text = csv_data.to_string(index=False)
                 documents.append(Document(page_content=text))
-        elif ext == ".csv":
-            csv_data = pd.read_csv(file_stream)
-            text = csv_data.to_string()
-            documents.append(Document(page_content=text))
-        else:
-            raise ValueError(f"Unsupported file type: {ext}")
+            else:
+                raise ValueError(f"Unsupported file type: {ext}")
+        except Exception as e:
+            raise ValueError(f"Error loading documents: {e}")
 
         if not documents:
             raise ValueError("No documents were loaded. Please check the file content.")
-
         return documents
 
     def _get_vectorstore(self, user_id: str, embeddings: OpenAIEmbeddings) -> Optional[FAISS]:
         user_folder = f"faiss_index_{user_id}"
         if os.path.exists(user_folder):
-            vectorstore = FAISS.load_local(
-                user_folder,
-                embeddings,
-                allow_dangerous_deserialization=True
-            )
-        else:
-            vectorstore = None
-        return vectorstore
+            return FAISS.load_local(user_folder, embeddings, allow_dangerous_deserialization=True)
+        return None
 
     def _save_vectorstore(self, vectorstore: FAISS, user_id: str):
         user_folder = f"faiss_index_{user_id}"
         os.makedirs(user_folder, exist_ok=True)
         vectorstore.save_local(user_folder)
 
-    def _split_documents(self, documents: list[Document]) -> list[Document]:
+    def _split_documents(self, documents: List[Document]) -> List[Document]:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         return text_splitter.split_documents(documents)
 
     def load_documents_to_faiss(self, file_bytes: bytes, file_extension: str, user_id: str, api_key: str) -> FAISS:
         embeddings = OpenAIEmbeddings(api_key=api_key)
         vectorstore = self._get_vectorstore(user_id, embeddings)
-        
         documents = self._load_documents(file_bytes, file_extension)
         splits = self._split_documents(documents)
 
@@ -112,7 +102,6 @@ class DocumentManager:
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         memory = self._load_memory(user_id)
 
-        # Use the retriever to get relevant documents for the query
         relevant_docs = retriever.retrieve(query)
         if not relevant_docs:
             return "No relevant documents found for the query."
@@ -120,21 +109,15 @@ class DocumentManager:
         prompt = f"Answer the following question based on the documents: {query}\nDocuments: {relevant_docs}"
         result = gpt4omini(prompt=prompt, api_key=api_key)
 
-        # Save updated memory after the query
         self._save_memory(memory, user_id)
-
         return result
 
 def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str = "user_temp") -> FAISS:
-    """
-    Public function to load documents and update FAISS index.
-    """
+    """Public function to load documents and update FAISS index."""
     doc_manager = DocumentManager()
     return doc_manager.load_documents_to_faiss(file_bytes, file_extension, user_id, api_key)
 
 def chatwithdoc(query: str, user_id: str, api_key: str) -> str:
-    """
-    Public function to query a FAISS index and generate a response.
-    """
+    """Public function to query a FAISS index and generate a response."""
     doc_manager = DocumentManager()
     return doc_manager.query_documents(query, user_id, api_key)
