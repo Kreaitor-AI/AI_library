@@ -16,7 +16,7 @@ from .gpt4omini import gpt4omini
 from typing import Optional
 
 class DocumentManager:
-    def _save_memory(self, memory, user_id: str):
+    def _save_memory(self, memory: ConversationBufferMemory, user_id: str):
         memory_path = f"{user_id}_memory.pkl"
         with open(memory_path, "wb") as f:
             pickle.dump(memory, f)
@@ -109,7 +109,12 @@ class DocumentManager:
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         memory = self._load_memory(user_id)
 
-        result = gpt4omini(prompt=f"Answer the following question based on the document: {query}", api_key=api_key)
+        # Use the retriever to get relevant documents for the query
+        relevant_docs = retriever.retrieve(query)
+        prompt = f"Answer the following question based on the documents: {query}\nDocuments: {relevant_docs}"
+        result = gpt4omini(prompt=prompt, api_key=api_key)
+
+        # Save updated memory after the query
         self._save_memory(memory, user_id)
 
         return result
