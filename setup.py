@@ -24,6 +24,7 @@ setup(
         "faiss-cpu",
         "nltk",
         "pypdf",
+        "langchain-community",
         "unstructured[all-docs]"
     ],
     package_data={
