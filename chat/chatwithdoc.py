@@ -42,7 +42,7 @@ class DocumentManager:
                 temp_pdf_path = temp_pdf.name
             loader = PyPDFLoader(temp_pdf_path)
             documents = loader.load()
-            os.remove(temp_pdf_path)  # Clean up the temporary file
+            os.remove(temp_pdf_path)
         elif ext == ".docx":
             loader = UnstructuredWordDocumentLoader(file_stream)
             documents = loader.load()
@@ -61,6 +61,9 @@ class DocumentManager:
             documents.append(Document(page_content=text))
         else:
             raise ValueError(f"Unsupported file type: {ext}")
+
+        if not documents:
+            raise ValueError("No documents were loaded. Please check the file content.")
 
         return documents
 
@@ -111,6 +114,9 @@ class DocumentManager:
 
         # Use the retriever to get relevant documents for the query
         relevant_docs = retriever.retrieve(query)
+        if not relevant_docs:
+            return "No relevant documents found for the query."
+
         prompt = f"Answer the following question based on the documents: {query}\nDocuments: {relevant_docs}"
         result = gpt4omini(prompt=prompt, api_key=api_key)
 
