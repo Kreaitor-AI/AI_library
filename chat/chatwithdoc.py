@@ -11,7 +11,7 @@ from langchain.vectorstores import FAISS
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from chat import gpt4omini
+from .gpt4omini import gpt4omini
 
 class DocumentManager:
     def _save_memory(self, memory, user_id: str):
