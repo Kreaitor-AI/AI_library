@@ -2,6 +2,7 @@ import os
 import pickle
 from io import BytesIO
 import pandas as pd
+import tempfile
 from langchain.document_loaders import (
     PyPDFLoader, UnstructuredWordDocumentLoader, UnstructuredFileLoader,
     UnstructuredExcelLoader, UnstructuredCSVLoader
@@ -10,7 +11,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from .gpt4omini import gpt4omini
 from typing import Optional
 
@@ -36,8 +37,12 @@ class DocumentManager:
         documents = []
 
         if ext == ".pdf":
-            loader = PyPDFLoader(file_stream)
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+                temp_pdf.write(file_bytes)
+                temp_pdf_path = temp_pdf.name
+            loader = PyPDFLoader(temp_pdf_path)
             documents = loader.load()
+            os.remove(temp_pdf_path)  # Clean up the temporary file
         elif ext == ".docx":
             loader = UnstructuredWordDocumentLoader(file_stream)
             documents = loader.load()
@@ -104,14 +109,10 @@ class DocumentManager:
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         memory = self._load_memory(user_id)
 
-
         result = gpt4omini(prompt=f"Answer the following question based on the document: {query}", api_key=api_key)
         self._save_memory(memory, user_id)
 
         return result
-
-
-
 
 def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str = "user_temp") -> FAISS:
     """
@@ -119,7 +120,6 @@ def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str =
     """
     doc_manager = DocumentManager()
     return doc_manager.load_documents_to_faiss(file_bytes, file_extension, user_id, api_key)
-
 
 def chatwithdoc(query: str, user_id: str, api_key: str) -> str:
     """
