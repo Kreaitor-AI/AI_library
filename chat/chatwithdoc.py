@@ -1,7 +1,7 @@
 import os
 import pickle
-import pandas as pd
 from io import BytesIO
+import pandas as pd
 from langchain.document_loaders import (
     PyPDFLoader, UnstructuredWordDocumentLoader, UnstructuredFileLoader,
     UnstructuredExcelLoader, UnstructuredCSVLoader
@@ -33,27 +33,28 @@ class ChatWithDoc:
             memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
         return memory
 
-    def load_documents(self, file_url):
-        ext = os.path.splitext(file_url)[-1].lower()
+    def load_documents(self, file_bytes, file_extension):
+        file_stream = BytesIO(file_bytes)
+        ext = file_extension.lower()
         documents = []
 
         if ext == ".pdf":
-            loader = PyPDFLoader(file_url)
+            loader = PyPDFLoader(file_stream)
             documents = loader.load()
         elif ext == ".docx":
-            loader = UnstructuredWordDocumentLoader(file_url)
+            loader = UnstructuredWordDocumentLoader(file_stream)
             documents = loader.load()
         elif ext in [".txt", ".md"]:
-            loader = UnstructuredFileLoader(file_url)
+            loader = UnstructuredFileLoader(file_stream)
             documents = loader.load()
         elif ext == ".xlsx":
-            xlsx_file = pd.ExcelFile(file_url)
+            xlsx_file = pd.ExcelFile(file_stream)
             for sheet in xlsx_file.sheet_names:
                 df = pd.read_excel(xlsx_file, sheet_name=sheet)
                 text = df.to_string()
                 documents.append(Document(page_content=text))
         elif ext == ".csv":
-            csv_data = pd.read_csv(file_url)
+            csv_data = pd.read_csv(file_stream)
             text = csv_data.to_string()
             documents.append(Document(page_content=text))
         else:
@@ -61,7 +62,7 @@ class ChatWithDoc:
 
         return documents
 
-    def update_faiss_index(self, file_url):
+    def update_faiss_index(self, file_bytes, file_extension):
         user_folder = f"faiss_index_{self.user_id}"
         embeddings = OpenAIEmbeddings(api_key=self.api_key)
 
@@ -74,7 +75,7 @@ class ChatWithDoc:
         else:
             vectorstore = None
 
-        docs = self.load_documents(file_url)
+        docs = self.load_documents(file_bytes, file_extension)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
@@ -95,12 +96,13 @@ class ChatWithDoc:
 
         return qa_chain
 
-def loaddoc(file_url: str, api_key: str, user_id: str) -> ConversationalRetrievalChain:
+def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) -> ConversationalRetrievalChain:
     """
     Load documents and update the FAISS index.
     
     Args:
-        file_url (str): The URL of the document file.
+        file_bytes (bytes): The bytes of the document file.
+        file_extension (str): The extension of the document file.
         api_key (str): API key for the OpenAI model.
         user_id (str): Unique user identifier.
         
@@ -108,7 +110,7 @@ def loaddoc(file_url: str, api_key: str, user_id: str) -> ConversationalRetrieva
         ConversationalRetrievalChain: The QA chain for the loaded documents.
     """
     chat_doc = ChatWithDoc(api_key, user_id)
-    return chat_doc.update_faiss_index(file_url)
+    return chat_doc.update_faiss_index(file_bytes, file_extension)
 
 def chatwithdoc(query: str, qa_chain: ConversationalRetrievalChain, api_key: str, user_id: str) -> str:
     """
