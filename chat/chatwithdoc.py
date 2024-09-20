@@ -12,6 +12,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from .gpt4omini import gpt4omini
+from typing import Optional
 
 class DocumentManager:
     def _save_memory(self, memory, user_id: str):
