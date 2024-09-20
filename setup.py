@@ -21,7 +21,11 @@ setup(
         "nest_asyncio",
         "fal-client",
         "tiktoken",
-        "pypdf"
+        "faiss-cpu",
+        "nltk",
+        "pypdf",
+        "langchain-community",
+        "unstructured[all-docs]"
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
