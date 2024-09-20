@@ -21,11 +21,16 @@ setup(
         "nest_asyncio",
         "fal-client",
         "tiktoken",
-        "faiss-cpu",
-        "nltk",
         "pypdf",
-        "unstructured[all-docs]"
+        # These are lite dependencies, excluding large ones like faiss-cpu, nltk, and unstructured[all-docs]
     ],
+    extras_require={
+        'full': [
+            "faiss-cpu",
+            "nltk",
+            "unstructured[all-docs]"
+        ]
+    },
     package_data={
         'liveweb': ['prompts.yaml'],
         'audiotools': ['prompts.yaml'],
