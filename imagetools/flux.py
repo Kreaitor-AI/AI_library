@@ -40,7 +40,11 @@ class ChatWithDoc:
         parsed_url = urlparse(file_url)
         path = parsed_url.path
         ext = os.path.splitext(path)[1].lower()  # Get the file extension
-        
+
+        # Remove query parameters for the extension check
+        if '?' in ext:
+            ext = ext.split('?')[0]
+
         documents = []
 
         response = requests.get(file_url)
@@ -105,34 +109,10 @@ class ChatWithDoc:
         return qa_chain
 
 def loaddoc(file_url: str, api_key: str, user_id: str) -> ConversationalRetrievalChain:
-    """
-    Load documents and update the FAISS index.
-    
-    Args:
-        file_url (str): The URL of the document file.
-        api_key (str): API key for the OpenAI model.
-        user_id (str): Unique user identifier.
-        
-    Returns:
-        ConversationalRetrievalChain: The QA chain for the loaded documents.
-    """
     chat_doc = ChatWithDoc(api_key, user_id)
     return chat_doc.update_faiss_index(file_url)
 
 def chatwithdoc(query: str, qa_chain: ConversationalRetrievalChain, api_key: str, user_id: str) -> str:
-    """
-    Query the loaded documents using the QA chain.
-    
-    Args:
-        query (str): The question to ask.
-        qa_chain (ConversationalRetrievalChain): The QA chain to use for the query.
-        api_key (str): API key for the OpenAI model.
-        user_id (str): Unique user identifier.
-        
-    Returns:
-        str: The answer to the query.
-    """
-    chat_doc = ChatWithDoc(api_key, user_id)
     result = qa_chain({"question": query})
     chat_doc.save_memory()
     return result['answer']
