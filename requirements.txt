@@ -18,3 +18,4 @@ pypdf
 pandas
 langchain-community
 langchain_community
+faiss-cpu
