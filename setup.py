@@ -20,7 +20,9 @@ setup(
         "nest_asyncio",
         "fal-client",
         "boto3",
-
+        "tiktoken",     
+        "pypdf",          
+        "pandas",     
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
