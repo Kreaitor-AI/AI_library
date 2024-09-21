@@ -22,7 +22,9 @@ setup(
         "boto3",
         "tiktoken",     
         "pypdf",          
-        "pandas",     
+        "pandas",
+        "langchain-community",
+        "langchain_community",
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
