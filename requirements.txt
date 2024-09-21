@@ -13,3 +13,6 @@ aiohttp
 asyncio
 nest_asyncio
 fal-client
+tiktoken
+pypdf
+pandas
