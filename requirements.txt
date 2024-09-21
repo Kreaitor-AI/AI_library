@@ -16,3 +16,5 @@ fal-client
 tiktoken
 pypdf
 pandas
+langchain-community
+langchain_community
