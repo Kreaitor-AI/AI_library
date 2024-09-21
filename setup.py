@@ -25,6 +25,7 @@ setup(
         "pandas",
         "langchain-community",
         "langchain_community",
+        "faiss-cpu",
     ],
     package_data={
         'liveweb': ['prompts.yaml'],
