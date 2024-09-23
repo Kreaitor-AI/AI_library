@@ -1,22 +1,22 @@
 import os
 import pickle
 import tempfile
-from io import BytesIO
 import pandas as pd
+from io import BytesIO
 from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.vectorstores import FAISS
+from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document
-from langchain.chains import ConversationalRetrievalChain
 
 class ChatWithDoc:
     def __init__(self, api_key: str, user_id: str):
         self.api_key = api_key
         self.user_id = user_id
         self.memory = self.load_memory()
-        self.embeddings = OpenAIEmbeddings(api_key=self.api_key)
+        self.qa_chain = None
 
     def save_memory(self):
         memory_path = f"{self.user_id}_memory.pkl"
@@ -39,8 +39,6 @@ class ChatWithDoc:
         if ext == ".pdf":
             loader = PyPDFLoader(file_path)
             documents = loader.load()
-        elif ext == ".docx":
-            raise ValueError("Support for .docx not implemented without unstructured.")
         elif ext == ".xlsx":
             xlsx_file = pd.ExcelFile(file_path)
             for sheet in xlsx_file.sheet_names:
@@ -58,9 +56,10 @@ class ChatWithDoc:
 
     def update_faiss_index(self, file_path, file_extension):
         user_folder = f"faiss_index_{self.user_id}"
+        embeddings = OpenAIEmbeddings(api_key=self.api_key)
 
         if os.path.exists(user_folder):
-            vectorstore = FAISS.load_local(user_folder, self.embeddings)
+            vectorstore = FAISS.load_local(user_folder, embeddings, allow_dangerous_deserialization=True)
         else:
             vectorstore = None
 
@@ -69,7 +68,7 @@ class ChatWithDoc:
         splits = text_splitter.split_documents(docs)
 
         if vectorstore is None:
-            vectorstore = FAISS.from_documents(splits, self.embeddings)
+            vectorstore = FAISS.from_documents(splits, embeddings)
         else:
             vectorstore.add_documents(splits)
 
@@ -84,7 +83,7 @@ class ChatWithDoc:
         )
 
     def query_documents(self, query: str) -> str:
-        if not hasattr(self, 'qa_chain'):
+        if not self.qa_chain:
             raise ValueError("QA chain not initialized. Please load documents first.")
 
         result = self.qa_chain({"question": query})
@@ -92,15 +91,6 @@ class ChatWithDoc:
         return result['answer']
 
 def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) -> None:
-    """
-    Load documents and update the FAISS index.
-    
-    Args:
-        file_bytes (bytes): The bytes of the document file.
-        file_extension (str): The extension of the document file.
-        api_key (str): API key for the OpenAI model.
-        user_id (str): Unique user identifier.
-    """
     with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
         temp_file.write(file_bytes)
         temp_file_path = temp_file.name
@@ -109,17 +99,5 @@ def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) 
     chat_doc.update_faiss_index(temp_file_path, file_extension)
 
 def chatwithdoc(query: str, api_key: str, user_id: str) -> str:
-    """
-    Query the loaded documents without passing qa_chain.
-    
-    Args:
-        query (str): The question to ask.
-        api_key (str): API key for the OpenAI model.
-        user_id (str): Unique user identifier.
-        
-    Returns:
-        str: The answer to the query.
-    """
     chat_doc = ChatWithDoc(api_key, user_id)
-    answer = chat_doc.query_documents(query)
-    return answer
+    return chat_doc.query_documents(query)
