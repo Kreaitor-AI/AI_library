@@ -1,132 +1,123 @@
 import os
 import pickle
-import tempfile
 from io import BytesIO
 import pandas as pd
-from langchain.document_loaders import PyPDFLoader
+import tempfile
+from langchain.document_loaders import (
+    PyPDFLoader, UnstructuredWordDocumentLoader, UnstructuredFileLoader,
+    UnstructuredExcelLoader, UnstructuredCSVLoader
+)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.vectorstores import FAISS
-from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document
+from langchain_openai import OpenAIEmbeddings
+from .gpt4omini import gpt4omini
+from typing import List, Optional
 
-class ChatWithDoc:
-    def __init__(self, api_key: str, user_id: str):
-        self.api_key = api_key
-        self.user_id = user_id
-        self.memory = self.load_memory()
-
-    def save_memory(self):
-        memory_path = f"{self.user_id}_memory.pkl"
+class DocumentManager:
+    def _save_memory(self, memory: ConversationBufferMemory, user_id: str):
+        memory_path = f"{user_id}_memory.pkl"
         with open(memory_path, "wb") as f:
-            pickle.dump(self.memory, f)
+            pickle.dump(memory, f)
 
-    def load_memory(self):
-        memory_path = f"{self.user_id}_memory.pkl"
+    def _load_memory(self, user_id: str) -> ConversationBufferMemory:
+        memory_path = f"{user_id}_memory.pkl"
         if os.path.exists(memory_path):
             with open(memory_path, "rb") as f:
-                memory = pickle.load(f)
-        else:
-            memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-        return memory
+                return pickle.load(f)
+        return ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 
-    def load_documents(self, file_path, file_extension):
+    def _load_documents(self, file_bytes: bytes, file_extension: str) -> List[Document]:
+        file_stream = BytesIO(file_bytes)
         ext = file_extension.lower()
         documents = []
 
-        if ext == ".pdf":
-            loader = PyPDFLoader(file_path)
-            documents = loader.load()
-        elif ext == ".docx":
-            # Assuming you have a custom way to process .docx without unstructured
-            raise ValueError("Support for .docx not implemented without unstructured.")
-        elif ext == ".xlsx":
-            xlsx_file = pd.ExcelFile(file_path)
-            for sheet in xlsx_file.sheet_names:
-                df = pd.read_excel(xlsx_file, sheet_name=sheet)
-                text = df.to_string()
+        try:
+            if ext == ".pdf":
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_pdf:
+                    temp_pdf.write(file_bytes)
+                    loader = PyPDFLoader(temp_pdf.name)
+                documents = loader.load()
+            elif ext == ".docx":
+                loader = UnstructuredWordDocumentLoader(file_stream)
+                documents = loader.load()
+            elif ext in [".txt", ".md"]:
+                loader = UnstructuredFileLoader(file_stream)
+                documents = loader.load()
+            elif ext == ".xlsx":
+                xlsx_file = pd.ExcelFile(file_stream)
+                for sheet in xlsx_file.sheet_names:
+                    df = pd.read_excel(xlsx_file, sheet_name=sheet)
+                    text = df.to_string(index=False)
+                    documents.append(Document(page_content=text))
+            elif ext == ".csv":
+                csv_data = pd.read_csv(file_stream)
+                text = csv_data.to_string(index=False)
                 documents.append(Document(page_content=text))
-        elif ext == ".csv":
-            csv_data = pd.read_csv(file_path)
-            text = csv_data.to_string()
-            documents.append(Document(page_content=text))
-        else:
-            raise ValueError(f"Unsupported file type: {ext}")
+            else:
+                raise ValueError(f"Unsupported file type: {ext}")
+        except Exception as e:
+            raise ValueError(f"Error loading documents: {e}")
 
+        if not documents:
+            raise ValueError("No documents were loaded. Please check the file content.")
         return documents
 
-    def update_faiss_index(self, file_path, file_extension):
-        user_folder = f"faiss_index_{self.user_id}"
-        embeddings = OpenAIEmbeddings(api_key=self.api_key)
-
+    def _get_vectorstore(self, user_id: str, embeddings: OpenAIEmbeddings) -> Optional[FAISS]:
+        user_folder = f"faiss_index_{user_id}"
         if os.path.exists(user_folder):
-            vectorstore = FAISS.load_local(
-                user_folder,
-                embeddings,
-                allow_dangerous_deserialization=True
-            )
-        else:
-            vectorstore = None
+            return FAISS.load_local(user_folder, embeddings, allow_dangerous_deserialization=True)
+        return None
 
-        docs = self.load_documents(file_path, file_extension)
+    def _save_vectorstore(self, vectorstore: FAISS, user_id: str):
+        user_folder = f"faiss_index_{user_id}"
+        os.makedirs(user_folder, exist_ok=True)
+        vectorstore.save_local(user_folder)
+
+    def _split_documents(self, documents: List[Document]) -> List[Document]:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-        splits = text_splitter.split_documents(docs)
+        return text_splitter.split_documents(documents)
+
+    def load_documents_to_faiss(self, file_bytes: bytes, file_extension: str, user_id: str, api_key: str) -> FAISS:
+        embeddings = OpenAIEmbeddings(api_key=api_key)
+        vectorstore = self._get_vectorstore(user_id, embeddings)
+        documents = self._load_documents(file_bytes, file_extension)
+        splits = self._split_documents(documents)
 
         if vectorstore is None:
             vectorstore = FAISS.from_documents(splits, embeddings)
         else:
             vectorstore.add_documents(splits)
 
-        os.makedirs(user_folder, exist_ok=True)
-        vectorstore.save_local(user_folder)
+        self._save_vectorstore(vectorstore, user_id)
+        return vectorstore
+
+    def query_documents(self, query: str, user_id: str, api_key: str) -> str:
+        embeddings = OpenAIEmbeddings(api_key=api_key)
+        vectorstore = self._get_vectorstore(user_id, embeddings)
+        if vectorstore is None:
+            raise ValueError(f"No FAISS index found for user ID: {user_id}")
 
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-        qa_chain = ConversationalRetrievalChain.from_llm(
-            llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=self.api_key),
-            retriever=retriever,
-            memory=self.memory
-        )
+        memory = self._load_memory(user_id)
 
-        return qa_chain
+        relevant_docs = retriever.retrieve(query)
+        if not relevant_docs:
+            return "No relevant documents found for the query."
 
-def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) -> ConversationalRetrievalChain:
-    """
-    Load documents and update the FAISS index.
-    
-    Args:
-        file_bytes (bytes): The bytes of the document file.
-        file_extension (str): The extension of the document file.
-        api_key (str): API key for the OpenAI model.
-        user_id (str): Unique user identifier.
-        
-    Returns:
-        ConversationalRetrievalChain: The QA chain for the loaded documents.
-    """
-    # Create a temporary file to store the document content
-    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
-        temp_file.write(file_bytes)
-        temp_file_path = temp_file.name  # Get the path to the temporary file
+        prompt = f"Answer the following question based on the documents: {query}\nDocuments: {relevant_docs}"
+        result = gpt4omini(prompt=prompt, api_key=api_key)
 
-    chat_doc = ChatWithDoc(api_key, user_id)
-    qa_chain = chat_doc.update_faiss_index(temp_file_path, file_extension)
+        self._save_memory(memory, user_id)
+        return result
 
-    return qa_chain
+def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str = "user_temp") -> FAISS:
+    """Public function to load documents and update FAISS index."""
+    doc_manager = DocumentManager()
+    return doc_manager.load_documents_to_faiss(file_bytes, file_extension, user_id, api_key)
 
-def chatwithdoc(query: str, qa_chain: ConversationalRetrievalChain, api_key: str, user_id: str) -> str:
-    """
-    Query the loaded documents using the QA chain.
-    
-    Args:
-        query (str): The question to ask.
-        qa_chain (ConversationalRetrievalChain): The QA chain to use for the query.
-        api_key (str): API key for the OpenAI model.
-        user_id (str): Unique user identifier.
-        
-    Returns:
-        str: The answer to the query.
-    """
-    chat_doc = ChatWithDoc(api_key, user_id)
-    result = qa_chain({"question": query})
-    chat_doc.save_memory()
-    return result['answer']
+def chatwithdoc(query: str, user_id: str, api_key: str) -> str:
+    """Public function to query a FAISS index and generate a response."""
+    doc_manager = DocumentManager()
+    return doc_manager.query_documents(query, user_id, api_key)
