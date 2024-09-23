@@ -16,6 +16,7 @@ class ChatWithDoc:
         self.api_key = api_key
         self.user_id = user_id
         self.memory = self.load_memory()
+        self.qa_chain = None  # Store QA chain after creation
 
     def save_memory(self):
         memory_path = f"{self.user_id}_memory.pkl"
@@ -82,13 +83,38 @@ class ChatWithDoc:
         vectorstore.save_local(user_folder)
 
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-        qa_chain = ConversationalRetrievalChain.from_llm(
+        self.qa_chain = ConversationalRetrievalChain.from_llm(
             llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=self.api_key),
             retriever=retriever,
             memory=self.memory
         )
 
-        return qa_chain
+        return self.qa_chain
+
+    def load_existing_faiss_index(self):
+        """
+        Load the FAISS index if it exists, and return the QA chain.
+        """
+        user_folder = f"faiss_index_{self.user_id}"
+        embeddings = OpenAIEmbeddings(api_key=self.api_key)
+
+        if os.path.exists(user_folder):
+            vectorstore = FAISS.load_local(
+                user_folder,
+                embeddings,
+                allow_dangerous_deserialization=True
+            )
+            retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+            self.qa_chain = ConversationalRetrievalChain.from_llm(
+                llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=self.api_key),
+                retriever=retriever,
+                memory=self.memory
+            )
+        else:
+            raise ValueError("FAISS index does not exist. Load documents first.")
+
+        return self.qa_chain
+
 
 def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) -> ConversationalRetrievalChain:
     """
@@ -113,13 +139,13 @@ def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) 
 
     return qa_chain
 
-def chatwithdoc(query: str, qa_chain: ConversationalRetrievalChain, api_key: str, user_id: str) -> str:
+
+def chatwithdoc(query: str, api_key: str, user_id: str) -> str:
     """
     Query the loaded documents using the QA chain.
     
     Args:
         query (str): The question to ask.
-        qa_chain (ConversationalRetrievalChain): The QA chain to use for the query.
         api_key (str): API key for the OpenAI model.
         user_id (str): Unique user identifier.
         
@@ -127,6 +153,14 @@ def chatwithdoc(query: str, qa_chain: ConversationalRetrievalChain, api_key: str
         str: The answer to the query.
     """
     chat_doc = ChatWithDoc(api_key, user_id)
-    result = qa_chain({"question": query})
+
+    # Try to load the existing FAISS index and QA chain
+    try:
+        if chat_doc.qa_chain is None:
+            chat_doc.load_existing_faiss_index()
+        result = chat_doc.qa_chain({"question": query})
+    except ValueError as e:
+        return str(e)
+
     chat_doc.save_memory()
     return result['answer']
