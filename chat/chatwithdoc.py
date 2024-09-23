@@ -101,4 +101,12 @@ def loaddoc(file_bytes: bytes, file_extension: str, api_key: str, user_id: str) 
 
 def chatwithdoc(query: str, api_key: str, user_id: str) -> str:
     chat_doc = ChatWithDoc(api_key, user_id)
+    if chat_doc.vectorstore is None or chat_doc.qa_chain is None:
+        raise ValueError("QA chain not initialized. Please load documents first.")
     return chat_doc.query_documents(query)
+
+def load_faiss_index(user_id: str, api_key: str) -> ChatWithDoc:
+    chat_doc = ChatWithDoc(api_key, user_id)
+    if not chat_doc.vectorstore:
+        raise ValueError(f"No FAISS index found for user ID: {user_id}")
+    return chat_doc
