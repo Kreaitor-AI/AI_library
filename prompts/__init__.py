@@ -12,3 +12,4 @@ from .text_shortner_prompt import text_shortner_prompt
 from .text_maximize_prompt import text_maximize_prompt
 from .text_tone_prompt import text_tone_prompt
 from .podcast_text_prompt import podcast_text_prompt
+from .character_conversion_template import character_conversion_template
