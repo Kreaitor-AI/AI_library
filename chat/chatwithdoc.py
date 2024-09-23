@@ -64,6 +64,7 @@ class ChatWithDoc:
         if os.path.exists(user_folder):
             vectorstore = FAISS.load_local(user_folder, self.embeddings)
         else:
+            # Initialize an empty FAISS index
             vectorstore = FAISS(embedding_function=self.embeddings)
 
         documents = self.load_documents(file_bytes, file_extension)
