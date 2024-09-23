@@ -16,6 +16,7 @@ class ChatWithDoc:
         self.api_key = api_key
         self.user_id = user_id
         self.memory = self.load_memory()
+        self.vectorstore = None
         self.qa_chain = None
 
     def save_memory(self):
@@ -59,23 +60,23 @@ class ChatWithDoc:
         embeddings = OpenAIEmbeddings(api_key=self.api_key)
 
         if os.path.exists(user_folder):
-            vectorstore = FAISS.load_local(user_folder, embeddings, allow_dangerous_deserialization=True)
+            self.vectorstore = FAISS.load_local(user_folder, embeddings, allow_dangerous_deserialization=True)
         else:
-            vectorstore = None
+            self.vectorstore = None
 
         docs = self.load_documents(file_path, file_extension)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
-        if vectorstore is None:
-            vectorstore = FAISS.from_documents(splits, embeddings)
+        if self.vectorstore is None:
+            self.vectorstore = FAISS.from_documents(splits, embeddings)
         else:
-            vectorstore.add_documents(splits)
+            self.vectorstore.add_documents(splits)
 
         os.makedirs(user_folder, exist_ok=True)
-        vectorstore.save_local(user_folder)
+        self.vectorstore.save_local(user_folder)
 
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+        retriever = self.vectorstore.as_retriever(search_kwargs={"k": 3})
         self.qa_chain = ConversationalRetrievalChain.from_llm(
             llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=self.api_key),
             retriever=retriever,
