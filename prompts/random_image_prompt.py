@@ -1,1 +1,1 @@
-random_image_prompt = "generate a random simple prompt to generate a image"
+random_image_prompt = "Suggest a random simple prompt to generate a image. This will be used for generating image from a image model. Directly stat with the prompt. Give prompt directly without any explanations or additional comments"
