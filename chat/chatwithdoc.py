@@ -58,9 +58,13 @@ class ChatWithDoc:
         return documents
 
     def update_faiss_index(self, file_path, file_extension):
-        user_folder = f"faiss_index_{self.user_id}"
+        # Set the base folder for storing FAISS indexes
+        base_folder = "faiss"
+        user_folder = os.path.join(base_folder, self.user_id)
+
         embeddings = OpenAIEmbeddings(api_key=self.api_key)
 
+        # Check if the user-specific folder exists and load the vectorstore
         if os.path.exists(user_folder):
             vectorstore = FAISS.load_local(
                 user_folder,
@@ -70,18 +74,24 @@ class ChatWithDoc:
         else:
             vectorstore = None
 
+        # Load documents and split them into chunks
         docs = self.load_documents(file_path, file_extension)
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
+        # Update the vectorstore
         if vectorstore is None:
             vectorstore = FAISS.from_documents(splits, embeddings)
         else:
             vectorstore.add_documents(splits)
 
+        # Ensure the base folder and user folder exist
         os.makedirs(user_folder, exist_ok=True)
+
+        # Save the updated FAISS index
         vectorstore.save_local(user_folder)
 
+        # Create the QA chain
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         self.qa_chain = ConversationalRetrievalChain.from_llm(
             llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0, openai_api_key=self.api_key),
@@ -95,7 +105,8 @@ class ChatWithDoc:
         """
         Load the FAISS index if it exists, and return the QA chain.
         """
-        user_folder = f"faiss_index_{self.user_id}"
+        base_folder = "faiss"
+        user_folder = os.path.join(base_folder, self.user_id)
         embeddings = OpenAIEmbeddings(api_key=self.api_key)
 
         if os.path.exists(user_folder):
