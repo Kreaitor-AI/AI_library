@@ -312,21 +312,9 @@ Tone = {
 }
 
 def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words):
-    """
-    Constructs a PromptTemplate for generating social media content.
-
-    Args:
-        query (str): The topic or subject of the post.
-        summary (str): Contextual information to guide the post.
-        socialmedia (str): The social media platform to tailor the post for.
-        post_topic (str): The type of post (e.g., Ad, Marketing, etc.).
-        sub_topic (str): The specific sub-type of the post.
-        tone (str): The tone to be used for the post.
-        words (str): The desired word count for the post.
-
-    Returns:
-        PromptTemplate: The formatted prompt template.
-    """
+    # If socialmedia is a tuple, extract the first element (platform name)
+    if isinstance(socialmedia, tuple):
+        socialmedia = socialmedia[0]
 
     # Retrieve content for the specified social media platform, post topic, and sub-topic
     platform_content = SocialMedia.get(socialmedia, {}).get(post_topic, {})
@@ -353,4 +341,5 @@ def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone
             "post_content": post_content  # Include the content of the post in the partial variables
         }
     )
+
     
