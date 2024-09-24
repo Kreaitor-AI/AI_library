@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate
 
-    SocialMedia = {
+SocialMedia = {
     "TwitterContent": {
         "Ad": {
             "Product Highlight": "Feature a product with a high-quality image or short video that showcases the product in action. Focus on one key benefit of the product and explain it in a compelling manner within the tweet. Include a direct call to action such as 'Shop now' with a link to the purchase page.",
@@ -15,7 +15,7 @@ from langchain.prompts import PromptTemplate
             "Default": "Ensure all marketing tweets align with your overall brand strategy and are tailored to your audience's interests and needs. Mix direct calls to action with engaging, informative content to keep your followers interested and active."
         },
         "Products": {
-            "Feature Focus": "Highlight a single feature of your product in each tweet. Describe its benefits succinctly and how it solves a problem or enhances the user's experience. Use compelling visuals or videos to illustrate the feature’s impact.",
+            "Feature Focus": "Highlight a single feature of your product in each tweet. Describe its benefits succinctly and how it solves a problem or enhances the user's experience. Use compelling visuals or videos to illustrate the feature's impact.",
             "Comparison": "When comparing products, be clear about the advantages using factual data and direct comparisons. Graphs or charts can be effective here. Always be respectful and professional to avoid the appearance of disparaging competitors.",
             "Default": "Regularly feature different aspects of your products, alternating focus between features, benefits, and comparisons. Keep the content fresh and engaging by using varied formats such as images, videos, and quick facts."
         },
@@ -69,7 +69,7 @@ from langchain.prompts import PromptTemplate
             "B2B": "Create ads that speak directly to business decision-makers. Highlight how your product or service can improve efficiency, reduce costs, or drive growth. Use professional language and include data or case studies to back up your claims. Encourage clicks with a strong call to action, such as 'Learn More' or 'Request a Demo'.",
             "Professional Services": "Promote your professional services by showcasing your expertise and experience. Use testimonials and client success stories to build trust. Highlight any certifications or awards to add credibility. Make it easy for potential clients to reach out with a clear call to action like 'Contact Us' or 'Schedule a Consultation'.",
             "Event Promotion": "Advertise events by focusing on the key benefits for attendees, such as networking opportunities, learning from industry experts, or gaining valuable insights. Use compelling visuals and include all necessary details like date, time, and location. Add a call to action like 'Register Now' or 'Save Your Seat'.",
-            "Default": "Ensure all ads are targeted and relevant to your audience. Use professional imagery and clear, concise messaging. Include a call to action to guide the viewer to the next step, whether it’s learning more, signing up, or contacting your team."
+            "Default": "Ensure all ads are targeted and relevant to your audience. Use professional imagery and clear, concise messaging. Include a call to action to guide the viewer to the next step, whether it's learning more, signing up, or contacting your team."
         },
         "Headlines": {
             "Direct": "Write headlines that get straight to the point, perfect for job postings or product launches. Use strong, clear language to convey the main message, such as 'Hiring Now: Senior Software Engineer' or 'New Product Launch: AI-Powered Analytics'.",
@@ -98,13 +98,13 @@ from langchain.prompts import PromptTemplate
     "FacebookContent": {
         "BrandPromotionPost": {
             "New Product": "Announce new products with vibrant visuals and enthusiastic language. Highlight the main features and benefits, and include a call to action like 'Shop Now' or 'Learn More'.",
-            "Brand Story": "Share your brand’s story or mission to connect emotionally with your audience. Use engaging visuals and storytelling techniques. Encourage interaction with a call to action like 'Share Your Story' or 'Join Our Community'.",
+            "Brand Story": "Share your brand's story or mission to connect emotionally with your audience. Use engaging visuals and storytelling techniques. Encourage interaction with a call to action like 'Share Your Story' or 'Join Our Community'.",
             "Customer Engagement": "Engage your audience with interactive content like polls, questions, or contests. Use visuals and language that encourage participation. Include a call to action such as 'Vote Now' or 'Comment Below'.",
             "Default": "Regularly post a variety of brand promotion content to keep your audience engaged. Mix product highlights, brand stories, and interactive posts. Always include strong visuals and clear calls to action to drive engagement."
         },
         "CustomerSuccessStory": {
             "Testimonial": "Share customer testimonials that highlight positive experiences with your product or service. Use direct quotes and high-quality images of the customer or the product in use. Include a call to action like 'Read More Stories' or 'Share Your Experience'.",
-            "Case Study": "Present in-depth case studies that detail how your product or service solved a customer’s problem. Use a narrative format with clear before-and-after scenarios. Include a call to action like 'Learn More' or 'See Results'.",
+            "Case Study": "Present in-depth case studies that detail how your product or service solved a customer's problem. Use a narrative format with clear before-and-after scenarios. Include a call to action like 'Learn More' or 'See Results'.",
             "Video Testimonial": "Post video testimonials to bring customer stories to life. Ensure the video is high-quality and authentic. Include a call to action like 'Watch Now' or 'Share Your Story'.",
             "Default": "Consistently share a mix of written, visual, and video testimonials to build trust and credibility. Highlight diverse customer experiences and always include a call to action to engage your audience further."
         },
@@ -114,6 +114,13 @@ from langchain.prompts import PromptTemplate
             "Service Ad": "Advertise services by focusing on the benefits and outcomes. Use testimonials or case studies to add credibility. Include a call to action like 'Learn More' or 'Contact Us'.",
             "General": "Run ads that are broadly aimed at building brand awareness. Use strong visuals and a simple, clear message. Include a call to action like 'Learn More' or 'Follow Us'.",
             "Default": "Regularly update your ad campaigns with fresh content and visuals. Test different formats and calls to action to see what resonates best with your audience. Ensure all ads align with your overall brand message."
+        },
+        "PostCaption": {
+            "Informative": "Craft informative post captions that provide value to your audience. Use concise language and bullet points if necessary to break down the information. Include a call to action like 'Learn More' or 'Discover Tips'.",
+            "Engaging": "Write engaging captions that encourage interaction. Ask questions, use humor, or create curiosity. Include a call to action like 'Comment Below' or 'Share Your Thoughts'.",
+            "Inspirational": "Create inspirational captions that resonate emotionally with your audience. Use quotes, stories, or motivational language. Include a call to action like 'Get Inspired' or 'Join the Movement'.",
+            "Default": "Maintain a balance of informative, engaging, and inspirational captions in your posts. Tailor the tone and content to match the accompanying visuals and always include a clear call to action."
+        },
         },
         "PostCaption": {
             "Informative": "Craft informative post captions that provide value to your audience. Use concise language and bullet points if necessary to break down the information. Include a call to action like 'Learn More' or 'Discover Tips'.",
@@ -295,12 +302,38 @@ from langchain.prompts import PromptTemplate
         }
     }
 },
-    Tone = {
-    "Default": "Use voicing acording to the content",
+Tone = {
+    "Default": "Use voicing according to the content",
     "Funny": "Incorporate humor through jokes, witty remarks, or playful visuals. Keep it light-hearted and relatable to your audience, avoiding controversial or sensitive topics.",
-    "Sad": "Use a sensitive and sincere tone to discuss serious issues or events that may evoke sadness. This approach should be used to connect on a deeper emotional level or to show solidarity during tough times.",
     "Nostalgic": "Evoke memories of the past by referencing popular trends, personal milestones, or historical events. The tone should be warm and inviting, aiming to create a sentimental connection with the audience.",
     "Angry": "Express displeasure or frustration about specific situations or injustices. Keep the language controlled and focused, using this tone to draw attention to important issues and call for action without alienating the audience.",
     "Empathetic": "Show understanding and compassion towards issues or personal stories shared by your audience. Use a caring and supportive language to foster a sense of community and trust.",
-    "Sarcastic": "Use irony and sharp wit to make a point or criticize something. Ensure the sarcasm is evident and does not come off as malicious or offensive, maintaining a balance between humor and message clarity."
+    "Sarcastic": "Use irony and sharp wit to make a point or criticize something. Ensure the sarcasm is evident and does not come off as malicious or offensive, maintaining a balance between humor and message clarity.",
+    "Sad": "Use a sensitive and sincere tone to discuss serious issues or events that may evoke sadness. This approach should be used to connect on a deeper emotional level or to show solidarity during tough times.",
 }
+
+def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words):
+    platform_content = social_media_content.get(socialmedia, {}).get(post_topic, {})
+    post_content = platform_content.get(sub_topic, "Default Content")  
+
+    return PromptTemplate(
+        template=f"""
+        Create a social media post on: {query}
+        Use this as contextual information: {summary}
+
+        Tune it for: {socialmedia}
+
+        Use this tone for writing and delivery: {tone}
+        Word length: Try to use around {words} words.
+
+        Don't provide outdated data.
+        """,
+        input_variables=["query", "summary"],
+        partial_variables={
+            "socialmedia": socialmedia,
+            "tone": tone,
+            "words": words
+        }
+    )
+
+    
