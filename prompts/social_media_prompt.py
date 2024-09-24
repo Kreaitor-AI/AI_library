@@ -311,15 +311,24 @@ Tone = {
     "Sad": "Use a sensitive and sincere tone to discuss serious issues or events that may evoke sadness. This approach should be used to connect on a deeper emotional level or to show solidarity during tough times.",
 }
 
-def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words):
-    # Debugging print to check the type of socialmedia
-    print(f"Type of socialmedia: {type(socialmedia)} - Value: {socialmedia}")
-    
-    # If socialmedia is a tuple, extract the first element (platform name)
-    if isinstance(socialmedia, tuple):
-        socialmedia = socialmedia[0]
-        print(f"Extracted socialmedia from tuple: {socialmedia}")  # Debugging output
-    
+def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words, SocialMedia):
+    """
+    Constructs a PromptTemplate for generating social media content.
+
+    Args:
+        query (str): The topic or subject of the post.
+        summary (str): Contextual information to guide the post.
+        socialmedia (str): The social media platform to tailor the post for.
+        post_topic (str): The type of post (e.g., Ad, Marketing, etc.).
+        sub_topic (str): The specific sub-type of the post.
+        tone (str): The tone to be used for the post.
+        words (str): The desired word count for the post.
+        SocialMedia (dict): The dictionary containing platform-specific content.
+
+    Returns:
+        PromptTemplate: The formatted prompt template.
+    """
+
     # Retrieve content for the specified social media platform, post topic, and sub-topic
     platform_content = SocialMedia.get(socialmedia, {}).get(post_topic, {})
     post_content = platform_content.get(sub_topic, "Default")  # Fallback if not found
