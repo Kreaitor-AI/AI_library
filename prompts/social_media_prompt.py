@@ -311,47 +311,51 @@ Tone = {
     "Sad": "Use a sensitive and sincere tone to discuss serious issues or events that may evoke sadness. This approach should be used to connect on a deeper emotional level or to show solidarity during tough times.",
 }
 
-def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words, SocialMedia):
+from langchain.prompts import PromptTemplate
+
+def social_media_prompt(query, summary, platform_key, post_topic, post_subtopic, tone_key, words):
     """
-    Constructs a PromptTemplate for generating social media content.
+    Constructs a PromptTemplate for generating social media posts dynamically based on platform, topic, and subtopic.
 
     Args:
-        query (str): The topic or subject of the post.
-        summary (str): Contextual information to guide the post.
-        socialmedia (str): The social media platform to tailor the post for.
-        post_topic (str): The type of post (e.g., Ad, Marketing, etc.).
-        sub_topic (str): The specific sub-type of the post.
-        tone (str): The tone to be used for the post.
+        query (str): The subject or topic of the post.
+        summary (str): Contextual information or summary for the post.
+        platform_key (str): The specific platform for which the content is being created (e.g., 'TwitterContent').
+        post_topic (str): The type of post or topic (e.g., 'Ad').
+        post_subtopic (str): The subtopic for the post (e.g., 'Product Highlight').
+        tone_key (str): The specific tone to be used (e.g., 'Funny', 'Empathetic').
         words (str): The desired word count for the post.
-        SocialMedia (dict): The dictionary containing platform-specific content.
 
     Returns:
         PromptTemplate: The formatted prompt template.
     """
+    # Retrieve platform-specific content from SocialMedia
+    platform_content = SocialMedia.get(platform_key, {})
 
-    # Retrieve content for the specified social media platform, post topic, and sub-topic
-    platform_content = SocialMedia.get(socialmedia, {}).get(post_topic, {})
-    post_content = platform_content.get(sub_topic, "Default")  # Fallback if not found
+    # Check if the platform has the specified post_topic
+    if post_topic not in platform_content:
+        return f"Error: Post topic '{post_topic}' not found in platform '{platform_key}'."
 
+    # Retrieve post content from the topic and subtopic
+    topic_content = platform_content.get(post_topic, {})
+    post_content = topic_content.get(post_subtopic, topic_content.get("Default", "General Update"))
+
+    # Retrieve the tone description from Tone
+    tone_description = Tone.get(tone_key, Tone.get("Default"))
+
+    # Create and return the PromptTemplate
     return PromptTemplate(
         template=f"""
         Create a social media post on: {query}
         Use this as contextual information: {summary}
-
-        Post Content: {post_content}
-        Tune it for: {socialmedia}
-
-        Use this tone for writing and delivery: {tone}
-        Word length: Try to use around {words} words.
-
-        Don't provide outdated data.
+        Post content: {post_content}
+        Use this tone: {tone_description}
+        Try to keep the word count around {words}.
         """,
         input_variables=["query", "summary"],
         partial_variables={
-            "socialmedia": socialmedia,
-            "tone": tone,
-            "words": words,
-            "post_content": post_content  # Include the content of the post in the partial variables
+            "post_content": post_content,
+            "tone_description": tone_description,
+            "words": words
         }
     )
-
