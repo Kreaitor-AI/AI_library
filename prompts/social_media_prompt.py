@@ -312,10 +312,14 @@ Tone = {
 }
 
 def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words):
+    # Debugging print to check the type of socialmedia
+    print(f"Type of socialmedia: {type(socialmedia)} - Value: {socialmedia}")
+    
     # If socialmedia is a tuple, extract the first element (platform name)
     if isinstance(socialmedia, tuple):
         socialmedia = socialmedia[0]
-
+        print(f"Extracted socialmedia from tuple: {socialmedia}")  # Debugging output
+    
     # Retrieve content for the specified social media platform, post topic, and sub-topic
     platform_content = SocialMedia.get(socialmedia, {}).get(post_topic, {})
     post_content = platform_content.get(sub_topic, "Default")  # Fallback if not found
