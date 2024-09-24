@@ -312,7 +312,7 @@ Tone = {
 }
 
 def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words):
-    platform_content = social_media_content.get(socialmedia, {}).get(post_topic, {})
+    platform_content = SocialMedia.get(socialmedia, {}).get(post_topic, {})
     post_content = platform_content.get(sub_topic, "Default Content")  
 
     return PromptTemplate(
