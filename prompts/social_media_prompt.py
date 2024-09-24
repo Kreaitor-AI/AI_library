@@ -121,7 +121,6 @@ SocialMedia = {
             "Inspirational": "Create inspirational captions that resonate emotionally with your audience. Use quotes, stories, or motivational language. Include a call to action like 'Get Inspired' or 'Join the Movement'.",
             "Default": "Maintain a balance of informative, engaging, and inspirational captions in your posts. Tailor the tone and content to match the accompanying visuals and always include a clear call to action."
         },
-        },
         "PostCaption": {
             "Informative": "Craft informative post captions that provide value to your audience. Use concise language and bullet points if necessary to break down the information. Include a call to action like 'Learn More' or 'Discover Tips'.",
             "Engaging": "Write engaging captions that encourage interaction. Ask questions, use humor, or create curiosity. Include a call to action like 'Comment Below' or 'Share Your Thoughts'.",
