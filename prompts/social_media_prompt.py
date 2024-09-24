@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate
-{
-    "SocialMedia": {
+
+    SocialMedia = {
         "TwitterContent": {
             "Ad": {
                 "Product Highlight": "Feature a product with a high-quality image or short video that showcases the product in action. Focus on one key benefit of the product and explain it in a compelling manner within the tweet. Include a direct call to action such as 'Shop now' with a link to the purchase page.",
@@ -295,7 +295,7 @@ from langchain.prompts import PromptTemplate
             }
         }
     },
-    "Tone": {
+    Tone = {
         "Default": "Use voicing acording to the content",
         "Funny": "Incorporate humor through jokes, witty remarks, or playful visuals. Keep it light-hearted and relatable to your audience, avoiding controversial or sensitive topics.",
         "Sad": "Use a sensitive and sincere tone to discuss serious issues or events that may evoke sadness. This approach should be used to connect on a deeper emotional level or to show solidarity during tough times.",
@@ -304,7 +304,6 @@ from langchain.prompts import PromptTemplate
         "Empathetic": "Show understanding and compassion towards issues or personal stories shared by your audience. Use a caring and supportive language to foster a sense of community and trust.",
         "Sarcastic": "Use irony and sharp wit to make a point or criticize something. Ensure the sarcasm is evident and does not come off as malicious or offensive, maintaining a balance between humor and message clarity."
     }
-}
 
 def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone, words):
     """
