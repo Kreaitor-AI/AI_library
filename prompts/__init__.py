@@ -14,3 +14,4 @@ from .text_tone_prompt import text_tone_prompt
 from .podcast_text_prompt import podcast_text_prompt
 from .character_conversion_template import character_conversion_template
 from .random_image_prompt import random_image_prompt
+from .social_media_prompt import social_media_prompt
