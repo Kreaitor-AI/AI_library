@@ -341,5 +341,3 @@ def social_media_prompt(query, summary, socialmedia, post_topic, sub_topic, tone
             "post_content": post_content  # Include the content of the post in the partial variables
         }
     )
-
-    
