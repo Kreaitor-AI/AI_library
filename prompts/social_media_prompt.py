@@ -341,36 +341,4 @@ def social_media_prompt(query, summary, platform_key, post_topic, post_subtopic,
     )
 
 
-    
-       
-    # Retrieve platform-specific content from SocialMedia
-    platform_content = SocialMedia.get(platform_key, {})
-
-    # Check if the platform has the specified post_topic
-    if post_topic not in platform_content:
-        return f"Error: Post topic '{post_topic}' not found in platform '{platform_key}'."
-
-    # Retrieve post content from the topic and subtopic
-    topic_content = platform_content.get(post_topic, {})
-    post_content = topic_content.get(post_subtopic, topic_content.get("Default", "General Update"))
-
-    # Retrieve the tone description from Tone
-    tone_description = Tone.get(tone_key, Tone.get("Default"))
-
-    # Create and return the PromptTemplate
-    return PromptTemplate(
-        template=f"""
-        Create a social media post on: {query}
-        Use this as contextual information: {summary}
-        Post content: {post_content}
-        Use this tone: {tone_description}
-        Try to keep the word count around {words}.
-        """,
-        input_variables=["query", "summary"],
-        partial_variables={
-            "post_content": post_content,
-            "tone_description": tone_description,
-            "words": words
-        }
-    )
 
