@@ -295,7 +295,7 @@ def social_media_prompt(query, summary, platform_key, post_topic, post_subtopic,
                 "Default": "Regularly brainstorm new project ideas. Ensure projects align with brand values and audience interests."
             }
         }
-    },
+    }
         
     
     Tone = {
