@@ -34,6 +34,10 @@ class GenerateImage:
             "model_endpoint": "fal-ai/flux-lora",
             "lora_path": "https://storage.googleapis.com/fal-flux-lora/b569e12a0c6f48bfa6ffb64c8891371c_pytorch_lora_weights.safetensors"
         },
+        "tora": {
+            "model_endpoint": "fal-ai/flux-lora",
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/ddb2cc318dc84a1f947e0b9cfd2505b6_pytorch_lora_weights.safetensors"
+        },
         "default": {
             "model_endpoint": "correct-model-endpoint",  # Replace with the default endpoint
             "lora_path": None
