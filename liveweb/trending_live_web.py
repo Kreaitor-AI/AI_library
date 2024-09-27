@@ -1,32 +1,3 @@
-def execute_toolkit(self, initial_query: str, num_results: int) -> str:
-    refined_query = self.refine_search_query(initial_query)
-    search_results = self.perform_google_search(refined_query, num_results)
-    if not search_results:
-        return "No search results found."
-
-    fetched_content = self.fetch_content_concurrently([link for _, link, _ in search_results])
-
-    if fetched_content:
-        # Removed the extra argument 'refined_query'
-        final_summary = self.process_web_content_with_llm(" ".join(fetched_content))
-        if final_summary.strip():
-            return final_summary
-    return "Failed to get a valid response."
-This change should resolve the TypeError and the method process_web_content_with_llm will now be called with the correct number of arguments.
-
-
-
-
-
-
-You said:
-give me full code
-ChatGPT said:
-ChatGPT
-Here is the full corrected code with the changes applied:
-
-python
-Copy code
 import requests
 from bs4 import BeautifulSoup
 from langchain import PromptTemplate
@@ -141,3 +112,4 @@ class LiveWebToolkit:
 def trending_web_summary(api_key: str, initial_query: str, num_results: int, prompts_file: Optional[str] = None) -> str:
     toolkit = LiveWebToolkit(api_key, prompts_file)
     return toolkit.execute_toolkit(initial_query, num_results)
+
