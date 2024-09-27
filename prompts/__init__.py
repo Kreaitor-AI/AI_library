@@ -17,3 +17,4 @@ from .random_image_prompt import random_image_prompt
 from .social_media_prompt import social_media_prompt
 from .social_image_prompt import social_image_prompt
 from .transcription_markdown_prompt import transcription_markdown_prompt
+from .text_summarise import text_summarise
