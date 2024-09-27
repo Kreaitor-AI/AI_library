@@ -1,3 +1,4 @@
+
 from .blog_format import blog_format
 from .essay_format import essay_format
 from .article_format import article_format
@@ -19,3 +20,4 @@ from .social_image_prompt import social_image_prompt
 from .transcription_markdown_prompt import transcription_markdown_prompt
 from .text_summarise import text_summarise
 from .trending_search_query import trending_search_query
+from .trending_social_media import trending_social_media
