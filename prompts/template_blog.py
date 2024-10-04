@@ -9,5 +9,6 @@ template_blog = """Write a detailed blog using the given parameters based on the
 **Main Content:**
 {summary}
 ----------------------------------------------------------------------------------------------
-Strictly follow {industry}.
+Strictly follow {industry} and {keywords} in blog content.
+
 Ensure the content is rich and detailed, capturing key points and nuances relevant to the topic."""
