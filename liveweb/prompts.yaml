@@ -1,5 +1,5 @@
 refine_search_query: |
-  Refine the following query to make it more precise and suitable. The initial query is provided by user and might not be good for a google search. Your provided output will be used to make a Google search:
+  Refine the following query to make it more precise and suitable. The initial query is provided by user and might not be good for a google search. Dont cahnge the context of {query} Your provided output will be used to make a Google search:
   Initial Query: {query}
 
 summarize_content: |
