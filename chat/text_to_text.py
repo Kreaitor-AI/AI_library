@@ -19,7 +19,7 @@ class TextToTextProcessor:
         Returns:
             str: The complete concatenated response.
         """
-        return ''.join(chunk for chunk in stream_response)
+        return ''.joiniter(stream_response)
 
     def process(self, prompt: str, stream: bool = False, language: Optional[str] = "English") -> Union[str, None]:
         """
