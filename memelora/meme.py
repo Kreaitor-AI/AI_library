@@ -12,7 +12,7 @@ class GenerateImage:
         },
         "neiro_test_dev": {
             "model_endpoint": "fal-ai/flux-lora",
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/4d4288ea40f14f9296fef3e6678d612a_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/a151d54ea08d4c5c938cd8847c010d7c_pytorch_lora_weights.safetensors"
         },
         "neiro_bot": {
             "model_endpoint": "fal-ai/flux-lora",
