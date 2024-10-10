@@ -24,7 +24,7 @@ class SuggestedFont:
     font = "Example Font"
 
 
-brandbook_format_examples = {
+brandbook_example_format = {
     "Slogan": Slogan,
     "Brand Values": BrandValues, 
     "Vision": Vision,  
