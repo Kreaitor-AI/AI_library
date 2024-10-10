@@ -1,6 +1,6 @@
 regenerate_brandbook_template = """
 Based on the current output of the {section} section, regenerate the {section} section using the following context:
-
+MAKE UPDATES AND PROVIDE JUST {section} section ONLY.
 context:
 {current_section_content}
 
