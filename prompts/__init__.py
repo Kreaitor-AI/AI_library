@@ -22,3 +22,4 @@ from .trending_search_query import trending_search_query
 from .trending_social_media import trending_social_media
 from .brandbook_template import brandbook_template
 from .brandbook_example_format import brandbook_example_format
+from .regenerate_brandbook_template import regenerate_brandbook_template
