@@ -5,6 +5,18 @@ from src.config import Config
 from typing import Optional, Dict
 
 class GenerateImage:
+    """
+    Handles the generation of images based on character configuration using specified prompts and models.
+    Parameters:
+        - character_name (str): Identifier for the character configuration to use.
+        - user_prompt (str): The base user prompt used for image generation.
+        - prompt_template (str): A template string that incorporates the user prompt into a full prompt.
+    Processing Logic:
+        - Customizes prompt generation based on input and a predefined template.
+        - Determines the appropriate model endpoint and weights for the character from a configuration mapping.
+        - Supports optional model weights path for the image generation request.
+        - Falls back to a default configuration if the character is not present in the mapping.
+    """
     CHARACTER_CONFIG: Dict[str, Dict[str, Optional[str]]] = {
         "ginnan": {
             "model_endpoint": "fal-ai/flux-lora",

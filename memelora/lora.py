@@ -2,12 +2,29 @@ import os
 import fal_client
 
 class ImageGenerator:
+    """
+    A utility class to generate images using a text-to-image API.
+    Parameters:
+        - fal_key (str): The API key for authenticating requests to the image generation service.
+    Processing Logic:
+        - Stores the provided API key in an environment variable for subsequent API calls.
+    """
     def __init__(self, fal_key):
         # Set the FAL_KEY environment variable with the API key
         os.environ["FAL_KEY"] = fal_key
 
     def generate_image(self, prompt, lora_path, model_endpoint):
         # Submit the request to the specified model (either LoRA or General)
+        """Generate an image based on a text prompt using a specified model endpoint.
+        Parameters:
+            - prompt (str): The text prompt to guide image generation.
+            - lora_path (str): The path to the LoRA parameters.
+            - model_endpoint (str): The endpoint URL of the image generation model.
+        Returns:
+            - str: URL of the generated image.
+        Processing Logic:
+            - Dynamically selects the model endpoint based on provided `model_endpoint`.
+            - Bakes in static parameters such as `num_images`, `image_size`, and `num_inference_steps` while allowing dynamic `prompt` and `lora_path`."""
         handler = fal_client.submit(
             model_endpoint,  # Dynamically choose the endpoint
             arguments={

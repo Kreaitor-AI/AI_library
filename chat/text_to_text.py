@@ -5,6 +5,16 @@ from .gpt4omini import gpt4omini
 from .llama3 import llama3
 
 class TextToTextProcessor:
+    """
+    A class handling text-to-text processing using various machine learning models.
+    Parameters:
+        - model (str): The identifier for the text processing model to be used.
+        - api_key (str): The API key required for accessing the model.
+    Processing Logic:
+        - If the 'stream' parameter is True, the responses are expected to be streamed and thus are handled by the '_handle_streaming_response' method.
+        - The 'process' method dynamically calls different model processing functions based on the 'model' attribute.
+        - The 'concat' method allows for chaining the output of one model as the input to another model.
+    """
     def __init__(self, model: str, api_key: str):
         self.model = model
         self.api_key = api_key

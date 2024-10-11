@@ -3,6 +3,14 @@ from fal_client import submit
 from .languages import language_codes
 
 class STTTools:
+    """
+    STTTools is a class for interfacing with the FAL API to transcribe or translate audio.
+    Parameters:
+        - api_key (str): The API key required to authenticate with the FAL API.
+    Processing Logic:
+        - The API key is set as an environment variable upon class initialization.
+        - Raises ValueError for unsupported languages or tasks during the request submission.
+    """
     def __init__(self, api_key: str):
         """
         Initialize the STTTools class with the API key.

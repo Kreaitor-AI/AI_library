@@ -5,6 +5,16 @@ from langchain.callbacks import AsyncIteratorCallbackHandler, StreamingStdOutCal
 from typing import Optional, AsyncIterator, Union
 
 class GPT4ominiClient:
+    """
+    Provides asynchronous interaction with GPT-4o-mini for chat completions.
+    Parameters:
+        - api_key (Optional[str]): The API key used to authenticate with the OpenAI API.
+    Processing Logic:
+        - Uses asyncio for managing asynchronous tasks.
+        - Employs a PromptTemplate to format input before sending it to the model.
+        - Utilizes a callback handling mechanism to stream response tokens.
+        - Chains components using the pipe (|) operator to create a processing pipeline.
+    """
     def __init__(self, api_key: Optional[str] = None):
         """
         Initialize the GPT4ominiClient with an optional API key.

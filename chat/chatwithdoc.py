@@ -12,6 +12,17 @@ from langchain.memory import ConversationBufferMemory
 from langchain.schema import Document
 
 class ChatWithDoc:
+    """
+    Handles conversational interactions with a document base by maintaining a FAISS index for retrieval and processing user queries.
+    Parameters:
+        - api_key (str): The API key to interact with the OpenAI services.
+        - user_id (str): Identifier for the user to create personalized indexes and memory.
+    Processing Logic:
+        - On initialization, load existing conversation memory or create a new one.
+        - Provides methods to update the FAISS index with new documents and load an existing index.
+        - Supports conversation retrieval from indexed documents and saves conversations to user memory.
+        - Handles different document types with specific loaders and processes them accordingly.
+    """
     def __init__(self, api_key: str, user_id: str):
         self.api_key = api_key
         self.user_id = user_id
@@ -24,6 +35,15 @@ class ChatWithDoc:
             pickle.dump(self.memory, f)
 
     def load_memory(self):
+        """Loads and returns the user's conversation memory from a file, if available; otherwise, initializes a new conversation memory.
+        Parameters:
+            - None
+        Returns:
+            - ConversationBufferMemory: An instance of the conversation memory, either loaded from a file or newly created.
+        Processing Logic:
+            - Checks if the user's memory file exists based on their user_id.
+            - If the file exists, the user's memory is loaded using pickle.
+            - If the file does not exist, a new ConversationBufferMemory object is instantiated with default parameters."""
         memory_path = f"{self.user_id}_memory.pkl"
         if os.path.exists(memory_path):
             with open(memory_path, "rb") as f:
@@ -33,6 +53,17 @@ class ChatWithDoc:
         return memory
 
     def load_documents(self, file_path, file_extension):
+        """Load documents from a file with the specified file extension.
+        Parameters:
+            - file_path (str): The path to the input file.
+            - file_extension (str): The extension of the file used to determine the loading procedure.
+        Returns:
+            - list: A list of Document objects containing the loaded data.
+        Processing Logic:
+            - .pdf files are loaded using a PyPDFLoader.
+            - .docx files are not supported and raise a ValueError.
+            - .xlsx files are converted to strings and saved as Document objects, one per sheet.
+            - .csv files are converted to a single string and saved as one Document object."""
         ext = file_extension.lower()
         documents = []
 
@@ -59,6 +90,17 @@ class ChatWithDoc:
 
     def update_faiss_index(self, file_path, file_extension):
         # Set the base folder for storing FAISS indexes
+        """Updates the FAISS index with new documents and creates a conversational retrieval chain.
+        Parameters:
+            - file_path (str): Path to the file containing documents to be indexed.
+            - file_extension (str): The file extension, used for parsing the document format.
+        Returns:
+            - ConversationalRetrievalChain: An instance of a conversational retrieval system.
+        Processing Logic:
+            - The embeddings are generated for the new documents and the FAISS index is updated or created.
+            - A text splitter is used to divide the documents into manageable chunks for processing.
+            - All folders necessary for storing the FAISS index are ensured to exist.
+            - The QA chain is formed using the updated FAISS index and a ConversationalRetrievalChain."""
         base_folder = "faiss"
         user_folder = os.path.join(base_folder, self.user_id)
 

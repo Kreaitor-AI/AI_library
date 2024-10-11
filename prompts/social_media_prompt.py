@@ -1,6 +1,24 @@
 from langchain.prompts import PromptTemplate
 
 def social_media_prompt(query, summary, platform_key, post_topic, post_subtopic, tone_key, words):
+    """```Returns a structured representation of a social media prompt based on input parameters.
+    Parameters:
+        - query (str): The main query or focus for the social media post.
+        - summary (str): Additional context or information to consider when creating the post.
+        - platform_key (str): Key indicating which social media platform the content is for.
+        - post_topic (str): Topic category of the post content within the platform.
+        - post_subtopic (str): Sub-category of the topic for more specific content.
+        - tone_key (str): Key indicating the desired tone of the content.
+        - words (int): Approximate word count to aim for in the post.
+    Returns:
+        - PromptTemplate: A PromptTemplate instance containing the structured post prompt containing the post_content and tone_description along with the input query, summary, and word count target.
+    Processing Logic:
+        - The function retrieves platform-specific content based on the 'platform_key'.
+        - If the 'post_topic' is not found within the 'platform_key', it returns an error.
+        - It then looks up post content based on 'post_subtopic' or defaults to a generic posting guideline if the subtopic is not found.
+        - The function retrieves the tone description from a predefined selection or defaults to general voicing advice.
+        - These components are structured into a PromptTemplate to facilitate content creation.
+    ```"""
     SocialMedia = {
         "TwitterContent": {
             "Ad": {

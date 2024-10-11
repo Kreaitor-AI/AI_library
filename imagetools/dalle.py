@@ -2,6 +2,14 @@ from openai import OpenAI
 from typing import Optional
 
 class DalleImageGenerator:
+    """
+    A class to interface with OpenAI's API for generating images using DALL-E.
+    Parameters:
+        - api_key (str): The API key needed to authenticate with the OpenAI API.
+    Processing Logic:
+        - The class stores the API client as an instance variable.
+        - Throws ValueError if the API response does not contain the expected image data.
+    """
     def __init__(self, api_key: str):
         """
         Initialize the DalleImageGenerator with an API key.

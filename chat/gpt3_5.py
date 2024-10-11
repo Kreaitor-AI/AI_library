@@ -5,6 +5,16 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from typing import Optional
 
 class GPT3_5TurboClient:
+    """
+    Interface for asynchronously interacting with OpenAI GPT-3.5-turbo model for chat completions.
+    Parameters:
+        - api_key (Optional[str]): An API key to authenticate requests to OpenAI.
+    Processing Logic:
+        - The chat_completion method uses a PromptTemplate to format the input prompt.
+        - If streaming is enabled, it sets up a callback handler for streaming output.
+        - The language input modifies the prompt to specify the response language.
+        - An asynchronous call is made through the ChatOpenAI instance to get the model's response.
+    """
     def __init__(self, api_key: Optional[str] = None):
         """
         Initialize the GPT3_5TurboClient with an optional API key.
