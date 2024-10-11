@@ -48,8 +48,7 @@ class FakeYouTTS:
 
         if response_json.get("success"):
             return response_json["inference_job_token"]
-        else:
-            raise Exception("TTS request failed.")
+        raise Exception("TTS request failed.")
 
     def check_tts_status(self, job_token):
         status_url = f"https://api.fakeyou.com/tts/job/{job_token}"
@@ -64,7 +63,7 @@ class FakeYouTTS:
 
             if response_json["state"]["status"] == "complete_success":
                 return response_json["state"]["maybe_public_bucket_wav_audio_path"]
-            elif response_json["state"]["status"] == "failed":
+            if response_json["state"]["status"] == "failed":
                 raise Exception("TTS job failed.")
 
             time.sleep(5)
