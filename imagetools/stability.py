@@ -6,11 +6,11 @@ from typing import Optional
 
 class StabilityImageGenerationError(Exception):
     """Custom exception for Stability image generation errors."""
-    pass
+
 
 class S3UploadError(Exception):
     """Custom exception for errors during S3 upload."""
-    pass
+
 
 class StabilityImageGenerator:
     def __init__(self, api_key: str, aws_access_key: str, aws_secret_key: str, bucket_name: str):
