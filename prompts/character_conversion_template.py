@@ -1,11 +1,16 @@
 character_conversion_template = """
 Ensure the following dialogue is in the correct format, with each line following the format 'Speaker: Text'.
-If any lines are not in this format, correct them. Then, convert the dialogue to use generic character names (Character 1, Character 2, etc.).
-Identify the characters in the dialogue well.If there's character name in dialogue provide it else leave it.Don't write "charcater1 heard to character 2" etc. Provide names in dialogue only if available. in dialogue
+If any lines are not in this format, correct them. Then, convert the dialogue to use the provided character names.
+
+Use the names exactly as provided in {names}. Do not replace any names with generic labels (e.g., Character 1, Character 2). Only include names in the dialogue if they are present, and ensure the dialogue matches the structure 'Speaker: Text'. 
+
+Do not write lines such as 'Character 1 heard Character 2', or similar, unless specified in the dialogue.
+
 Example input: "Ms. Dubinsky: We'd like you to join our debate team."
-Example output: "Character 1: We'd like you to join our debate team."
+Example output: "Aisha: We'd like you to join our debate team."
+
 Here is the dialogue:
 {dialogue}
 
-Make sure the number of character are {num_characters} and their gender is in sequence of {gender}, Starting with host's gender and follwed by guest's gender. The total of host and guest should be {num_characters}.
+Make sure the characters are exactly as provided in {names}.
 """
