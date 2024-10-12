@@ -6,11 +6,11 @@ from typing import Optional
 
 class StabilityImageGenerationError(Exception):
     """Custom exception for Stability image generation errors."""
-    pass
+
 
 class S3UploadError(Exception):
     """Custom exception for errors during S3 upload."""
-    pass
+
 
 class StabilityImageGenerator:
     """
