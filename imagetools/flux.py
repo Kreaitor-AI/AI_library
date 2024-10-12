@@ -4,7 +4,7 @@ from typing import Optional
 
 class ImageGenerationError(Exception):
     """Custom exception for image generation errors."""
-    pass
+
 
 class ImageGenerator:
     """
