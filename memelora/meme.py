@@ -32,7 +32,7 @@ class GenerateImage:
         },
         "TBull_bot": {
             "model_endpoint": "fal-ai/flux-lora",
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/2365de7d12234465947939bde3591181_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/32600fc5a2c1409cbb9293327eab91ed_pytorch_lora_weights.safetensors"
         },
         "TBull_botV2": {
             "model_endpoint": "fal-ai/flux-lora",
