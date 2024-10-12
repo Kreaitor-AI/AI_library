@@ -3,6 +3,16 @@ from together import Together
 from typing import Optional, List
 
 class Llama3Client:
+    """
+    A client for interacting with the Llama-3 model via the Together API, with streaming capability.
+    Parameters:
+        - api_key (Optional[str]): The API key used to authenticate with the Together API.
+    Processing Logic:
+        - Throws an error if an API key is not provided either directly or through environment variables.
+        - Adjusts the prompt to include the requested language if it's other than English.
+        - Handles streaming and non-streaming modes based on the stream parameter.
+        - Collects streaming responses into a single string if streaming is enabled.
+    """
     def __init__(self, api_key: Optional[str] = None):
         """
         Initialize the Llama3Client with an optional API key.

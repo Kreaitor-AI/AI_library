@@ -4,6 +4,15 @@ from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from typing import Optional
 
 class GPT4ominiClient:
+    """
+    Initializes and handles interactions with GPT-4o-mini model for chat completions.
+    Parameters:
+        - api_key (Optional[str]): An API key to authenticate with the OpenAI API.
+    Processing Logic:
+        - Templates the prompt to include the request for response in the specified language.
+        - Configures callbacks for streaming if enabled.
+        - Invokes the chat model with the templated prompt and processes the response.
+    """
     def __init__(self, api_key: Optional[str] = None):
         """
         Initialize the GPT4ominiClient with an optional API key.

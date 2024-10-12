@@ -8,6 +8,16 @@ from langchain_openai import ChatOpenAI
 import pkg_resources
 
 class CloneAudioTools:
+    """
+    Initializes a tool for audio cloning and text-to-speech using OpenAI and ElevenLabs APIs.
+    Parameters:
+        - openai_api_key (str): API key for authenticating with the OpenAI service.
+        - elevenlabs_api_key (str): API key for authenticating with the ElevenLabs service.
+        - prompts_file (str, optional): File path for loading prompts; defaults to an internally provided 'prompts.yaml'.
+    Processing Logic:
+        - Sets up clients for interacting with ChatOpenAI and ElevenLabs using the provided API keys.
+        - Loads prompts from a YAML file, with a fallback to a package-default 'prompts.yaml' if not specified.
+    """
     def __init__(self, openai_api_key: str, elevenlabs_api_key: str, prompts_file: str = None):
         """
         Initialize the CloneAudioTools class with API keys and load prompts.

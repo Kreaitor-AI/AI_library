@@ -7,6 +7,16 @@ class ImageGenerationError(Exception):
     pass
 
 class ImageGenerator:
+    """
+    Represents an object that can generate images using the FAL API.
+    Parameters:
+        - fal_key (str): The API key used to authenticate with the FAL service.
+    Processing Logic:
+        - Upon initialization, the FAL API key is stored in an environment variable.
+        - The `generate_image` method submits a request to the FAL server and waits for the result.
+        - If the result contains images, the URL of the first image is returned.
+        - An exception is raised if no images are generated or returned.
+    """
     def __init__(self, fal_key: str):
         """
         Initialize the ImageGenerator with the FAL API key.

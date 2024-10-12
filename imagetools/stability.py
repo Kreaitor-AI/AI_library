@@ -13,6 +13,19 @@ class S3UploadError(Exception):
     pass
 
 class StabilityImageGenerator:
+    """
+    Class for generating and uploading AI-generated images using Stability AI API and AWS S3.
+    Parameters:
+        - api_key (str): Stability AI API key.
+        - aws_access_key (str): AWS access key ID for S3 access.
+        - aws_secret_key (str): AWS secret access key for S3.
+        - bucket_name (str): Name of the S3 bucket for storing images.
+    Processing Logic:
+        - Bearer token for API authentication is constructed using the api_key.
+        - S3 client is instantiated with AWS credentials for later image uploads.
+        - The base url is hardcoded and tailored to Stability AI's stable diffusion model v2beta.
+        - Custom exceptions are raised to handle specific error scenarios.
+    """
     def __init__(self, api_key: str, aws_access_key: str, aws_secret_key: str, bucket_name: str):
         """
         Initialize the StabilityImageGenerator with API and AWS credentials.

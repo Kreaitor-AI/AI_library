@@ -10,6 +10,18 @@ from elevenlabs import Voice, VoiceSettings
 import pkg_resources
 
 class AudioTools:
+    """
+    Initializes a utility class for handling audio-related tasks using OpenAI and ElevenLabs APIs.
+    Parameters:
+        - openai_api_key (str): The API key needed to authenticate requests to the OpenAI service.
+        - elevenlabs_api_key (str): The API key required for accessing ElevenLabs' text-to-speech functionalities.
+        - prompts_file (str, optional): File path of the YAML file containing prompts configurations; defaults to internal 'prompts.yaml'.
+    Processing Logic:
+        - Automatically sets the 'prompts_file' to an internal default if not provided.
+        - Loads the prompts configuration from the specified YAML file.
+        - Initializes ChatOpenAI with the specified OpenAI API key and a pre-defined model.
+        - Creates a mapping for voices using the loaded prompts options.
+    """
     def __init__(self, openai_api_key: str, elevenlabs_api_key: str, prompts_file: str = None):
         """
         Initialize the AudioTools class with API keys and load prompts.
