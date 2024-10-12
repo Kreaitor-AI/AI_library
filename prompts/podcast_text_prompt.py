@@ -1,5 +1,6 @@
-podcast_text_prompt ="""Generate a podcast script on the topic '{topic}' and the context:{summary_result}. The script should have {num_characters} characters and character names. Make sure to keep {num_characters} only. The script should be approximately {length_words} words long. Please make sure that the script is of {length_words}words. Dont add emotions and extra stuff just give the script
+podcast_text_prompt ="""Generate a podcast script on the topic '{topic}' and the context:{summary_result}. The script should have {num_characters} characters and character names. Make sure to keep {num_characters} only and thats includes host as well. The script should be approximately {length_words} words long. Please make sure that the script is of {length_words}words. Dont add emotions and extra stuff just give the script
 Dont start with something like *Ben:* .Dont use stars in the script.
+
 For the genders of host and guest refer:{gender}. In sequence the first gender is for host and sequentailly next are for guests.
 
 Example:
