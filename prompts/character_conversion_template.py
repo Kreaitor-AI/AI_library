@@ -6,4 +6,6 @@ Example input: "Ms. Dubinsky: We'd like you to join our debate team."
 Example output: "Character 1: We'd like you to join our debate team."
 Here is the dialogue:
 {dialogue}
+
+Make sure the number of character are {num_characters} and their gender is in sequence of {gender}, Starting with host's gender and follwed by guest's gender. The total of host and guest should be {num_characters}.
 """
