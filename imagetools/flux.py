@@ -47,8 +47,7 @@ class ImageGenerator:
 
         if result.get('images') and len(result['images']) > 0:
             return result['images'][0]['url']
-        else:
-            raise ImageGenerationError("Image generation failed or no image returned.")
+        raise ImageGenerationError("Image generation failed or no image returned.")
 
 def flux(fal_key: str, prompt: str) -> str:
     """

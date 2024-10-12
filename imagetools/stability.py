@@ -87,8 +87,7 @@ class StabilityImageGenerator:
         
         if response.status_code == 200:
             return response.content
-        else:
-            raise StabilityImageGenerationError(f"Image generation failed: {response.json()}")
+        raise StabilityImageGenerationError(f"Image generation failed: {response.json()}")
 
     def upload_image_to_s3(self, image_content: bytes, s3_file_path: str) -> str:
         """

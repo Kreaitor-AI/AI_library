@@ -44,8 +44,7 @@ class ImageGenerator:
         result = handler.get()
         if 'images' in result and len(result['images']) > 0:
             return result['images'][0]['url']
-        else:
-            raise Exception("Image generation failed or no image returned.")
+        raise Exception("Image generation failed or no image returned.")
 
 # Public function to generate image using the specified model
 def lora(fal_key, lora_path, prompt, model_endpoint="fal-ai/flux-lora"):

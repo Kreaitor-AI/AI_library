@@ -79,8 +79,7 @@ class GenerateImage:
     def _request_image_url(self, prompt: str, model_endpoint: str, lora_path: Optional[str] = None) -> str:
         if lora_path:
             return lora(fal_key=Config.FAL_KEY_SECRET, lora_path=lora_path, prompt=prompt, model_endpoint=model_endpoint)
-        else:
-            return flux(fal_key=Config.FAL_KEY_SECRET, prompt=prompt)
+        return flux(fal_key=Config.FAL_KEY_SECRET, prompt=prompt)
 
     def generate_for_character(self, character_name: str, user_prompt: str, prompt_template: str) -> str:
         config = self.CHARACTER_CONFIG.get(character_name, self.CHARACTER_CONFIG["default"])
