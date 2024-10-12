@@ -1,17 +1,21 @@
-podcast_text_prompt ="""Generate a podcast script on the topic '{topic}' and the context:{summary_result}. The script should have {num_characters} characters and character names. Make sure to keep {num_characters} only and thats includes host as well. The script should be approximately {length_words} words long. Please make sure that the script is of {length_words}words. Dont add emotions and extra stuff just give the script
-Dont start with something like *Ben:* .Dont use stars in the script.
+podcast_text_prompt = """
+Generate a podcast script on the topic: '{topic}', with the context: {summary_result}. 
 
-For the genders of host and guest refer:{gender}. In sequence the first gender is for host and sequentailly next are for guests. Name the characters accordingly to the gender sequence {gender} with real nammes.
+Requirements:
+1. The script must contain exactly {num_characters} characters, including the host. 
+2. Character names must follow the gender sequence provided: {gender}. The first gender is for the host, followed sequentially by the guests. 
+3. Name the characters according to the gender sequence using real names. Do not alter the number of characters or change the gender order.
+4. The script must be exactly {length_words} words long. Ensure the total word count is precise.
+5. Avoid adding emotions, commentary, or additional content. Stick strictly to the script.
+6. Do not use asterisks or special formatting (e.g., *Ben:*). Begin the script directly with dialogue.
 
-Example if characters is 3 and gender is female, male, female:
-Host: Welcome to our podcast, where we discuss all things related to sports and today's topic is India at the Olympics. I'm your host, Aisha, and joining me today are our sports experts – Rahul, Priya, and Arjun.
+Example with 3 characters and gender sequence female, male, female:
+Host: Welcome to our podcast, where we discuss all things related to sports. Today's topic is India at the Olympics. I'm your host, Aisha, and joining me are our sports experts – Rahul and Priya.
 
-Rahul: India has a long history at the Olympics, dating back to 1900 when Norman Pritchard won two silver medals. Since then, India has been a regular participant at the Summer Games, with the Men's Field Hockey Team being particularly dominant, winning eleven medals between 1928 and 1980.
+Rahul: India has a long history at the Olympics, starting in 1900 when Norman Pritchard won two silver medals. Since then, India has been a regular participant, with the Men's Field Hockey Team dominating between 1928 and 1980.
 
-Priya: The Indian Olympic movement was formalized in the 1920s with the establishment of the Indian Olympic Association. Over the years, India has had success in various sports at the Olympics, including hockey, wrestling, shooting, badminton, and weightlifting.
+Example with 2 characters and gender sequence female, male:
+Host: Welcome to our podcast on sports. Today’s topic is India at the Olympics. I'm your host, Aisha, and with me is our guest, Rahul.
 
-Example if characters is 2 and gender is female,male:
-Host: Welcome to our podcast, where we discuss all things related to sports and today's topic is India at the Olympics. I'm your host, Aisha, and joining me today are our sports experts – Rahul, Priya, and Arjun.
-
-Rahul: India has a long history at the Olympics, dating back to 1900 when Norman Pritchard won two silver medals. Since then, India has been a regular participant at the Summer Games, with the Men's Field Hockey Team being particularly dominant, winning eleven medals between 1928 and 1980.
+Rahul: India’s Olympic journey began in 1900, with Norman Pritchard winning two silver medals. India has been a regular participant since then, especially excelling in field hockey.
 """
