@@ -48,13 +48,13 @@ class StabilityImageEditor:
         )
         self.bucket_name = bucket_name
 
-    def remove_object(self, image_path: str, mask_path: str, output_format: str = "png") -> bytes:
+    def remove_object(self, image_bytes: bytes, mask_bytes: bytes, output_format: str = "png") -> bytes:
         """
         Remove an object from an image using Stability AI API.
 
         Args:
-            image_path (str): The file path of the image to edit.
-            mask_path (str): The file path of the mask image to indicate the object to remove.
+            image_bytes (bytes): The binary content of the image to edit.
+            mask_bytes (bytes): The binary content of the mask image to indicate the object to remove.
             output_format (str): The format of the resulting image. Defaults to "png".
 
         Returns:
@@ -64,8 +64,8 @@ class StabilityImageEditor:
             ImageEditError: If the image editing process fails.
         """
         files = {
-            "image": open(image_path, "rb"),
-            "mask": open(mask_path, "rb"),
+            "image": image_bytes,
+            "mask": mask_bytes,
         }
         data = {"output_format": output_format}
 
@@ -103,7 +103,7 @@ class StabilityImageEditor:
             raise S3UploadError(f"Failed to upload image to S3: {str(e)}")
 
 
-def remove_object(api_key: str, aws_access_key: str, aws_secret_key: str, bucket_name: str, image_path: str, mask_path: str, output_format: str = "png") -> str:
+def remove_object(api_key: str, aws_access_key: str, aws_secret_key: str, bucket_name: str, image_bytes: bytes, mask_bytes: bytes, output_format: str = "png") -> str:
     """
     Remove an object from an image, upload the edited image to S3, and return the S3 URL.
 
@@ -112,8 +112,8 @@ def remove_object(api_key: str, aws_access_key: str, aws_secret_key: str, bucket
         aws_access_key (str): AWS access key ID for S3.
         aws_secret_key (str): AWS secret access key for S3.
         bucket_name (str): S3 bucket name where images will be uploaded.
-        image_path (str): The file path of the image to edit.
-        mask_path (str): The file path of the mask image to indicate the object to remove.
+        image_bytes (bytes): The binary content of the image to edit.
+        mask_bytes (bytes): The binary content of the mask image to indicate the object to remove.
         output_format (str): The format of the resulting image. Defaults to "png".
 
     Returns:
@@ -124,7 +124,7 @@ def remove_object(api_key: str, aws_access_key: str, aws_secret_key: str, bucket
         S3UploadError: If the upload to S3 fails.
     """
     editor = StabilityImageEditor(api_key, aws_access_key, aws_secret_key, bucket_name)
-    edited_image_content = editor.remove_object(image_path, mask_path, output_format)
+    edited_image_content = editor.remove_object(image_bytes, mask_bytes, output_format)
 
     unique_id = uuid.uuid4()
     s3_file_path = f"edited-images/{unique_id}.{output_format}"
