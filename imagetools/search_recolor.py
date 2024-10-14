@@ -2,7 +2,6 @@ import requests
 import boto3
 import uuid
 from botocore.exceptions import NoCredentialsError
-from typing import Optional
 
 class StabilityImageGenerationError(Exception):
     """Custom exception for Stability image generation errors."""
@@ -29,12 +28,12 @@ class StabilityImageGenerator:
         )
         self.bucket_name = bucket_name
 
-    def search_recolor(self, image_path: str, prompt: str, select_prompt: str, output_format: str = "png") -> bytes:
+    def search_recolor(self, image_bytes: bytes, prompt: str, select_prompt: str, output_format: str = "png") -> bytes:
         """
         Perform search-and-recolor operation using the Stability AI API.
 
         Args:
-            image_path (str): Path to the image to be recolored.
+            image_bytes (bytes): The binary content of the image to be recolored.
             prompt (str): The prompt that defines how the image should be recolored.
             select_prompt (str): The part of the image to search for and recolor.
             output_format (str): The format of the output image. Defaults to "png".
@@ -45,20 +44,20 @@ class StabilityImageGenerator:
         Raises:
             StabilityImageGenerationError: If the recoloring request fails.
         """
-        with open(image_path, "rb") as image_file:
-            files = {
-                "image": image_file
-            }
-            data = {
-                "prompt": prompt,
-                "select_prompt": select_prompt,
-                "output_format": output_format
-            }
-            response = requests.post(self.base_url, headers=self.headers, files=files, data=data)
+        files = {
+            "image": image_bytes,
+        }
+        data = {
+            "prompt": prompt,
+            "select_prompt": select_prompt,
+            "output_format": output_format
+        }
         
-            if response.status_code == 200:
-                return response.content
-            raise StabilityImageGenerationError(f"Search and recolor failed: {response.json()}")
+        response = requests.post(self.base_url, headers=self.headers, files=files, data=data)
+        
+        if response.status_code == 200:
+            return response.content
+        raise StabilityImageGenerationError(f"Search and recolor failed: {response.json()}")
 
     def upload_image_to_s3(self, image_content: bytes, s3_file_path: str) -> str:
         """
@@ -83,7 +82,7 @@ class StabilityImageGenerator:
             raise S3UploadError(f"Failed to upload image to S3: {str(e)}")
 
 
-def search_recolor(api_key: str, aws_access_key: str, aws_secret_key: str, bucket_name: str, image_path: str, prompt: str, select_prompt: str) -> str:
+def search_recolor(api_key: str, aws_access_key: str, aws_secret_key: str, bucket_name: str, image_bytes: bytes, prompt: str, select_prompt: str) -> str:
     """
     Recolor an image using Stability AI and upload the result to an S3 bucket.
 
@@ -92,7 +91,7 @@ def search_recolor(api_key: str, aws_access_key: str, aws_secret_key: str, bucke
         aws_access_key (str): AWS access key ID for S3.
         aws_secret_key (str): AWS secret access key for S3.
         bucket_name (str): S3 bucket name where images will be uploaded.
-        image_path (str): Path to the image to be recolored.
+        image_bytes (bytes): The binary content of the image to be recolored.
         prompt (str): The prompt that defines how the image should be recolored.
         select_prompt (str): The part of the image to search for and recolor.
 
@@ -100,7 +99,7 @@ def search_recolor(api_key: str, aws_access_key: str, aws_secret_key: str, bucke
         str: The URL of the uploaded recolored image in S3.
     """
     generator = StabilityImageGenerator(api_key, aws_access_key, aws_secret_key, bucket_name)
-    image_content = generator.search_recolor(image_path=image_path, prompt=prompt, select_prompt=select_prompt)
+    image_content = generator.search_recolor(image_bytes=image_bytes, prompt=prompt, select_prompt=select_prompt)
     
     unique_id = uuid.uuid4()
     s3_file_path = f"images/{unique_id}.png"
