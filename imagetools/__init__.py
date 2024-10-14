@@ -2,7 +2,7 @@ from .dalle import dalle
 from .stability import stability
 from .flux import flux
 from .inpaint import inpaint
-from .image_upscaler import image_upscaler
+from .upscale_image import upscale_image
 from .remove_background import remove_background
 from .search_replace import search_replace
 from .search_recolor import search_recolor
