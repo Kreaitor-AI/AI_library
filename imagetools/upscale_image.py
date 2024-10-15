@@ -14,12 +14,12 @@ class ImageUpscaler:
     def __init__(self, fal_key: str):
         os.environ["FAL_KEY"] = fal_key
 
-    def upscale_image(self, image_bytes: bytes) -> str:
+    def upscale_image(self, image_path: str) -> str:
         """
         Upscale an image.
 
         Args:
-            image_bytes (bytes): The bytes of the image to upscale.
+            image_path (str): The path of the image to upscale.
 
         Returns:
             str: The URL of the upscaled image.
@@ -27,10 +27,10 @@ class ImageUpscaler:
         Raises:
             ImageUpscalerError: If the upscaling fails or no image is returned.
         """
-        # Upload the image
-        image_url = fal_client.upload_file(image_bytes)
+        
+        image_url = fal_client.upload_file(image_path)
 
-        # Submit a request to upscale the image
+        
         handler = fal_client.submit(
             "fal-ai/clarity-upscaler",
             arguments={"image_url": image_url}
@@ -41,13 +41,13 @@ class ImageUpscaler:
             return result['image']['url']
         raise ImageUpscalerError("Image upscaling failed or no image returned.")
 
-def upscale_image(fal_key: str, image_bytes: bytes) -> str:
+def upscale_image(fal_key: str, image_path: str) -> str:
     """
     Convenience function to upscale an image.
 
     Args:
         fal_key (str): The API key for FAL.
-        image_bytes (bytes): The bytes of the image to upscale.
+        image_path (str): The path of the image to upscale.
 
     Returns:
         str: The URL of the upscaled image.
@@ -56,4 +56,4 @@ def upscale_image(fal_key: str, image_bytes: bytes) -> str:
         ImageUpscalerError: If the upscaling fails or no image is returned.
     """
     upscaler = ImageUpscaler(fal_key)
-    return upscaler.upscale_image(image_bytes)
+    return upscaler.upscale_image(image_path)
