@@ -24,7 +24,7 @@ class GenerateImage:
         },
         "neiro_test_dev": {
             "model_endpoint": "fal-ai/flux-lora",
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/293b05e1437c4592930fe643171c385d_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/8649c4c581bb40c183b434265fb93ef5_pytorch_lora_weights.safetensors"
         },
         "neiro_bot": {
             "model_endpoint": "fal-ai/flux-lora",
