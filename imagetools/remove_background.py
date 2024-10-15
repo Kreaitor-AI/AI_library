@@ -14,12 +14,12 @@ class BackgroundRemover:
     def __init__(self, fal_key: str):
         os.environ["FAL_KEY"] = fal_key
 
-    def remove_background(self, image_bytes: bytes) -> str:
+    def remove_background(self, image_path: str) -> str:
         """
         Remove the background from an image.
 
         Args:
-            image_bytes (bytes): The bytes of the image to process.
+            image_path (str): The path of the image to process.
 
         Returns:
             str: The URL of the processed image with the background removed.
@@ -27,10 +27,10 @@ class BackgroundRemover:
         Raises:
             BackgroundRemovalError: If the background removal fails or no image is returned.
         """
-        # Upload the image
-        image_url = fal_client.upload_file(image_bytes)
+       
+        image_url = fal_client.upload_file(image_path: str)
 
-        # Submit a request to remove the background
+        
         handler = fal_client.submit(
             "fal-ai/birefnet",
             arguments={"image_url": image_url}
@@ -41,13 +41,13 @@ class BackgroundRemover:
             return result['image']['url']
         raise BackgroundRemovalError("Background removal failed or no image returned.")
 
-def remove_background(fal_key: str, image_bytes: bytes) -> str:
+def remove_background(fal_key: str, image_path: str) -> str:
     """
     Convenience function to remove background from an image.
 
     Args:
         fal_key (str): The API key for FAL.
-        image_bytes (bytes): The bytes of the image to process.
+        image_path (str): The bytes of the image to process.
 
     Returns:
         str: The URL of the processed image with the background removed.
@@ -56,4 +56,4 @@ def remove_background(fal_key: str, image_bytes: bytes) -> str:
         BackgroundRemovalError: If the background removal fails or no image is returned.
     """
     remover = BackgroundRemover(fal_key)
-    return remover.remove_background(image_bytes)
+    return remover.remove_background(image_path: str)
