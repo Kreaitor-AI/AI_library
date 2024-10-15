@@ -47,7 +47,7 @@ def remove_background(fal_key: str, image_path: str) -> str:
 
     Args:
         fal_key (str): The API key for FAL.
-        image_path (str): The bytes of the image to process.
+        image_path (str): The path of the image to process.
 
     Returns:
         str: The URL of the processed image with the background removed.
