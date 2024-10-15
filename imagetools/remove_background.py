@@ -28,7 +28,7 @@ class BackgroundRemover:
             BackgroundRemovalError: If the background removal fails or no image is returned.
         """
        
-        image_url = fal_client.upload_file(image_path: str)
+        image_url = fal_client.upload_file(image_path)
 
         
         handler = fal_client.submit(
@@ -56,4 +56,4 @@ def remove_background(fal_key: str, image_path: str) -> str:
         BackgroundRemovalError: If the background removal fails or no image is returned.
     """
     remover = BackgroundRemover(fal_key)
-    return remover.remove_background(image_path: str)
+    return remover.remove_background(image_path)
