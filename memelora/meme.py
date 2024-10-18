@@ -64,7 +64,7 @@ class GenerateImage:
         },
         "klaus": {
             "model_endpoint": "fal-ai/flux-lora", 
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/8ffdc397b30c4da8ba18752de44fbc62_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/93bdc35b9e4e408d92d242d09d27331c_pytorch_lora_weights.safetensors"
         },
         "klaus_V2": {
             "model_endpoint": "fal-ai/flux-lora", 
