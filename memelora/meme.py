@@ -80,7 +80,7 @@ class GenerateImage:
         },
         "mad": {
             "model_endpoint": "fal-ai/flux-lora", 
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/69b65c5a4653477494e295183149e59f_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/7e601db519b14be99d3087d4c004cfd4_pytorch_lora_weights.safetensors"
         },
         "fwog": {
             "model_endpoint": "fal-ai/flux-lora", 
