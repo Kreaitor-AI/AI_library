@@ -52,7 +52,7 @@ class GenerateImage:
         },
         "tora": {
             "model_endpoint": "fal-ai/flux-lora",
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/883acc1c260549b9a285461b55e7c150_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/6c9047b8631342428d9b3c08dace3eaa_pytorch_lora_weights.safetensors"
         },
         "simons_cat": {
             "model_endpoint": "fal-ai/flux-lora", 
