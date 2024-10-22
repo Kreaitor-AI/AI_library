@@ -38,6 +38,10 @@ class GenerateImage:
             "model_endpoint": "fal-ai/flux-lora",
             "lora_path": "https://storage.googleapis.com/fal-flux-lora/51fb01637828495bab1c56a6f0d04662_pytorch_lora_weights.safetensors"
         },
+        "NeiroV2": {
+            "model_endpoint": "fal-ai/flux-lora",
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/51fb01637828495bab1c56a6f0d04662_pytorch_lora_weights.safetensors"
+        },
         "cate": {
             "model_endpoint": "fal-ai/flux-lora",
             "lora_path": "https://storage.googleapis.com/fal-flux-lora/266d7154a467435bb1841a5d814656e3_pytorch_lora_weights.safetensors"
