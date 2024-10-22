@@ -88,7 +88,7 @@ class GenerateImage:
         },
         "stabby_duck": {
             "model_endpoint": "fal-ai/flux-lora", 
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/3f298811f2714a6e8db107c7b9850354_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/43fddb1c8d274c00b23715a3537a7dd1_pytorch_lora_weights.safetensors"
         },
         "default": {
             "model_endpoint": "correct-model-endpoint",  # Replace with the default endpoint
