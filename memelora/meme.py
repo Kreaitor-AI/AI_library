@@ -20,7 +20,7 @@ class GenerateImage:
     CHARACTER_CONFIG: Dict[str, Dict[str, Optional[str]]] = {
         "ginnan": {
             "model_endpoint": "fal-ai/flux-lora",
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/62ac63a1d08f4c0889f993b410ee94f3_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/80dfafdbca9f4bbc868cbeac916bc1d2_pytorch_lora_weights.safetensors"
         },
         "neiro_test_dev": {
             "model_endpoint": "fal-ai/flux-lora",
