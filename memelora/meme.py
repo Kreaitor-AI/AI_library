@@ -1,6 +1,6 @@
 from imagetools import flux
 from memelora import lora
-from chat import gpt4omini
+from chat import gpt3_5
 from src.config import Config
 from typing import Optional, Dict
 
@@ -106,7 +106,7 @@ class GenerateImage:
 
     def _generate_prompt(self, user_prompt: str, prompt_template: str) -> str:
         llama_prompt = prompt_template.format(user_prompt=user_prompt)
-        return gpt4omini(prompt=llama_prompt, api_key=Config.OPENAI_API_KEY)
+        return gpt3_5(prompt=llama_prompt, api_key=Config.OPENAI_API_KEY)
 
     def _request_image_url(self, prompt: str, model_endpoint: str, lora_path: Optional[str] = None) -> str:
         if lora_path:
