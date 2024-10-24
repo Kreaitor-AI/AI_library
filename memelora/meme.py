@@ -50,6 +50,10 @@ class GenerateImage:
             "model_endpoint": "fal-ai/flux-lora",
             "lora_path": "https://storage.googleapis.com/fal-flux-lora/b569e12a0c6f48bfa6ffb64c8891371c_pytorch_lora_weights.safetensors"
         },
+        "mumu": {
+            "model_endpoint": "fal-ai/flux-lora",
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/d85d61819687421187d5d1c2140f55db_pytorch_lora_weights.safetensors"
+        },
         "tora": {
             "model_endpoint": "fal-ai/flux-lora",
             "lora_path": "https://storage.googleapis.com/fal-flux-lora/883acc1c260549b9a285461b55e7c150_pytorch_lora_weights.safetensors"
