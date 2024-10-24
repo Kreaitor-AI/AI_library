@@ -44,7 +44,7 @@ class GenerateImage:
         },
         "cate": {
             "model_endpoint": "fal-ai/flux-lora",
-            "lora_path": "https://storage.googleapis.com/fal-flux-lora/5ec7b1ef54854457bc746c87ec52a4ca_pytorch_lora_weights.safetensors"
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/d85d61819687421187d5d1c2140f55db_pytorch_lora_weights.safetensors"
         },
         "roost": {
             "model_endpoint": "fal-ai/flux-lora",
