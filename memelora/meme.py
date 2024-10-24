@@ -90,6 +90,10 @@ class GenerateImage:
             "model_endpoint": "fal-ai/flux-lora", 
             "lora_path": "https://storage.googleapis.com/fal-flux-lora/eb3a7fb859244df9a7670b0a5823b4b5_pytorch_lora_weights.safetensors"
         },
+        "bork": {
+            "model_endpoint": "fal-ai/flux-lora", 
+            "lora_path": "https://storage.googleapis.com/fal-flux-lora/5ec7b1ef54854457bc746c87ec52a4ca_pytorch_lora_weights.safetensors"
+        },
         "stabby_duck": {
             "model_endpoint": "fal-ai/flux-lora", 
             "lora_path": "https://storage.googleapis.com/fal-flux-lora/43fddb1c8d274c00b23715a3537a7dd1_pytorch_lora_weights.safetensors"
